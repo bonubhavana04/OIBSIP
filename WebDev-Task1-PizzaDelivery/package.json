@@ -1,0 +1,14 @@
+{
+  "name": "pizza-delivery",
+  "version": "1.0.0",
+  "description": "Full-stack Pizza Delivery app — React + Node.js + MongoDB",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "seed": "npm run seed:admin --prefix backend && npm run seed:menu --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
