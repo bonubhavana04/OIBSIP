@@ -1,11 +1,12 @@
 const router      = require("express").Router();
 const rateLimit   = require("express-rate-limit");
 const {
-  register, login, getMe, updateProfile, changePassword,
+  register, login, adminLogin, registerAdmin, createAdminAccount,
+  getMe, updateProfile, changePassword,
   verifyEmail, resendVerification,
   forgotPassword, resetPassword,
 } = require("../controllers/authController");
-const { protect } = require("../middleware/auth");
+const { protect, adminOnly } = require("../middleware/auth");
 const {
   validate, required, isEmail, minLen, maxLen, isString,
 } = require("../middleware/validate");
@@ -67,5 +68,50 @@ router.get( "/verify-email",                                        verifyEmail)
 router.get("/me",              protect, getMe);
 router.put("/profile",         protect, updateProfile);
 router.put("/change-password", protect, changePassword);
+
+// ── Admin-only routes ─────────────────────────────────────────────────────────
+
+// Dedicated admin login — server-side rejects non-admins and inactive accounts
+router.post("/admin/login", loginLimiter, loginRules, adminLogin);
+
+// Open admin self-registration — no invite code required
+// ⚠️  Any visitor can create an admin account. Restrict in production if needed.
+router.post("/admin/register", authLimiter, validate({
+  name:            [required("Name"),            isString("Name"),     minLen("Name", 2),     maxLen("Name", 60)],
+  email:           [required("Email"),           isEmail("Email")],
+  password:        [required("Password"),        minLen("Password", 8), maxLen("Password", 72)],
+  confirmPassword: [required("Confirm password")],
+}), registerAdmin);
+
+// Create additional admin accounts — existing admin JWT required
+router.post("/admin/accounts", protect, adminOnly, validate({
+  name:     [required("Name"),     isString("Name"),     minLen("Name", 2),     maxLen("Name", 60)],
+  email:    [required("Email"),    isEmail("Email")],
+  password: [required("Password"), minLen("Password", 8), maxLen("Password", 72)],
+}), createAdminAccount);
+
+// List all admin accounts — existing admin JWT required
+router.get("/admin/accounts", protect, adminOnly, async (req, res) => {
+  const User = require("../models/User");
+  const admins = await User.find({ role: "admin" }).select("name email isActive createdAt").lean();
+  res.json({ admins });
+});
+
+// Toggle admin active/inactive — existing admin JWT required, cannot deactivate self
+router.patch("/admin/accounts/:id/status", protect, adminOnly, async (req, res) => {
+  const User = require("../models/User");
+  const { isActive } = req.body;
+  if (typeof isActive !== "boolean")
+    return res.status(400).json({ message: "isActive (boolean) is required" });
+  if (req.params.id === req.user._id.toString())
+    return res.status(400).json({ message: "You cannot deactivate your own account" });
+  const admin = await User.findOneAndUpdate(
+    { _id: req.params.id, role: "admin" },
+    { isActive },
+    { new: true }
+  ).select("name email isActive");
+  if (!admin) return res.status(404).json({ message: "Admin account not found" });
+  res.json({ admin });
+});
 
 module.exports = router;

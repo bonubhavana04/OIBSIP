@@ -1,29 +1,48 @@
 /**
  * inventoryService.js
  *
- * All stock mutations go through this module.  Every function that changes
- * stock writes an InventoryLog entry in the same operation so the audit trail
- * is always consistent.
+ * All stock mutations go through this module. Every function that changes
+ * stock writes an InventoryLog entry so the audit trail is always consistent.
  *
- * MongoDB transactions are used when the connection is part of a replica set.
- * When running against a standalone mongod (common in development) the code
- * falls back to a safe sequential approach that is still idempotent because
- * every deduction is guarded by the Order.stockDeducted flag.
+ * Atomicity strategy (standalone mongod — no replica set required):
+ *   Every mutation uses a single findOneAndUpdate with a filter that encodes
+ *   the precondition (e.g. stock >= qty, reservation status === "reserved").
+ *   MongoDB guarantees document-level atomicity for a single update, so the
+ *   check-and-modify is never split across two operations.
+ *
+ *   The Order.stockDeducted flag is the idempotency gate for deductions:
+ *   confirmPayment / confirmCOD set it atomically via findOneAndUpdate with
+ *   { stockDeducted: false } in the filter, so duplicate payment callbacks
+ *   or webhooks can never trigger a second deduction.
+ *
+ * Replica-set / Atlas (transactions):
+ *   When the connection is part of a replica set, MongoDB multi-document
+ *   transactions are available. The current implementation does NOT use them
+ *   because the reservation model already prevents overselling without them:
+ *     - reserveStock atomically increments reservedStock (pre-payment hold)
+ *     - deductStock atomically converts "reserved" → "deducted" per ingredient
+ *     - If any deduction fails, the catch block rolls back already-deducted
+ *       items by reversing each findOneAndUpdate individually
+ *   This is safe because the Order.stockDeducted flag ensures the entire
+ *   deduct-then-flag sequence is attempted at most once per order.
+ *
+ *   To enable true multi-document transactions in the future, wrap the loop
+ *   in deductStock inside a mongoose session (see the commented _withTransaction
+ *   pattern at the bottom of this file).
  */
 
-const mongoose    = require("mongoose");
-const Inventory   = require("../models/Inventory");
-const InventoryLog = require("../models/InventoryLog");
+const Inventory      = require("../models/Inventory");
+const InventoryLog   = require("../models/InventoryLog");
 const PizzaIngredient = require("../models/PizzaIngredient");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Build a Map<ingredientId, totalQty> from an order's items.
- * Handles both menu pizzas (via PizzaIngredient) and custom builder pizzas.
+ * Build a Map<ingredientId(string), totalQty> from an order's items.
+ * Handles both menu pizzas (via PizzaIngredient recipe) and custom builder pizzas.
  */
 const buildIngredientMap = async (orderItems) => {
-  const counts = new Map(); // id (string) → qty
+  const counts = new Map();
 
   const add = (id, qty) => {
     const key = id.toString();
@@ -40,7 +59,6 @@ const buildIngredientMap = async (orderItems) => {
       if (cp.cheese) add(cp.cheese, qty);
       for (const v of cp.veggies || []) add(v, qty);
     } else if (item.itemType === "menu" && item.pizza) {
-      // Look up the ingredient recipe for this menu pizza
       const recipe = await PizzaIngredient.find({ pizza: item.pizza });
       for (const r of recipe) {
         add(r.ingredient, r.qty * qty);
@@ -52,12 +70,13 @@ const buildIngredientMap = async (orderItems) => {
 };
 
 /**
- * Write a single InventoryLog entry inside an optional session.
+ * Write a single InventoryLog entry.
+ * Pass a mongoose session to include the write in a transaction.
  */
 const writeLog = (ingredient, delta, stockBefore, stockAfter, reason, extras = {}, session) => {
   const doc = {
-    ingredient:     ingredient._id,
-    ingredientName: ingredient.name,
+    ingredient:     ingredient._id || ingredient,
+    ingredientName: ingredient.name || "unknown",
     delta,
     stockBefore,
     stockAfter,
@@ -72,8 +91,8 @@ const writeLog = (ingredient, delta, stockBefore, stockAfter, reason, extras = {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
- * validateStock — read-only check.
- * Returns { ok: true } or { ok: false, shortfalls: [{ name, need, available }] }
+ * validateStock — read-only pre-flight check.
+ * Returns { ok: true } or { ok: false, shortfalls: [{ name, need, available }] }.
  * Does NOT modify any document.
  */
 const validateStock = async (orderItems) => {
@@ -85,7 +104,7 @@ const validateStock = async (orderItems) => {
 
   const shortfalls = [];
   for (const doc of docs) {
-    if (doc.stock === -1) continue; // unlimited
+    if (doc.stock === -1) continue;
     const need      = counts.get(doc._id.toString()) || 0;
     const available = Math.max(0, doc.stock - doc.reservedStock);
     if (available < need) {
@@ -98,9 +117,16 @@ const validateStock = async (orderItems) => {
 
 /**
  * reserveStock — atomically increments reservedStock for each ingredient.
- * Uses findOneAndUpdate with an $expr guard so the check-and-increment is
- * a single atomic operation — prevents TOCTOU races between concurrent orders.
- * Throws with a user-friendly message if any ingredient is short.
+ *
+ * Uses findOneAndUpdate with an $expr guard so the availability check and
+ * the increment are a single atomic operation — prevents TOCTOU races between
+ * concurrent orders placing at the same time.
+ *
+ * Idempotent: if a reservation for this order already exists in "reserved" or
+ * "deducted" state with the same quantity, the call is a no-op for that item.
+ *
+ * Throws with a user-friendly message (and a shortfalls array) if any
+ * ingredient has insufficient available stock.
  */
 const reserveStock = async (orderItems, orderId) => {
   const counts = await buildIngredientMap(orderItems);
@@ -109,48 +135,115 @@ const reserveStock = async (orderItems, orderId) => {
   const ids  = [...counts.keys()];
   const docs = await Inventory.find({ _id: { $in: ids } });
 
-  // Build a name map for error messages
-  const nameMap = new Map(docs.map((d) => [d._id.toString(), d.name]));
-
-  const reserved = []; // track successful increments for rollback
+  const reservedNow = [];
 
   try {
     for (const [id, qty] of counts) {
       const doc = docs.find((d) => d._id.toString() === id);
-      if (!doc || doc.stock === -1) continue; // unlimited — skip
 
-      // Atomic: only increment if (stock - reservedStock) >= qty
+      if (!doc) {
+        throw Object.assign(
+          new Error(`Inventory item not found: ${id}`),
+          { status: 409 }
+        );
+      }
+
+      if (doc.stock === -1) continue;
+
+      // Idempotency: skip if a valid reservation already exists for this order
+      const existing = doc.reservations.find(
+        (r) => r.order.toString() === orderId.toString()
+      );
+
+      if (existing) {
+        if (
+          existing.quantity === qty &&
+          ["reserved", "deducted"].includes(existing.status)
+        ) {
+          continue;
+        }
+        throw Object.assign(
+          new Error(`Reservation already exists in state "${existing.status}" for "${doc.name}".`),
+          { status: 409 }
+        );
+      }
+
+      // Atomic check-and-increment: fails if available stock < qty
       const updated = await Inventory.findOneAndUpdate(
         {
           _id: id,
           stock: { $ne: -1 },
-          $expr: { $gte: [{ $subtract: ["$stock", "$reservedStock"] }, qty] },
+          "reservations.order": { $ne: orderId },
+          $expr: {
+            $gte: [
+              { $subtract: ["$stock", { $ifNull: ["$reservedStock", 0] }] },
+              qty,
+            ],
+          },
         },
-        { $inc: { reservedStock: qty } },
-        { new: true }
+        {
+          $inc:  { reservedStock: qty },
+          $push: {
+            reservations: { order: orderId, quantity: qty, status: "reserved" },
+          },
+        },
+        { returnDocument: "after" }
       );
 
       if (!updated) {
-        // Re-read to get current available for the error message
+        // Re-read to distinguish "race-lost but now idempotent" from "truly out of stock"
         const fresh = await Inventory.findById(id);
-        const available = fresh ? Math.max(0, fresh.stock - fresh.reservedStock) : 0;
-        const name = nameMap.get(id) || id;
+        const duplicate = fresh?.reservations.find(
+          (r) => r.order.toString() === orderId.toString()
+        );
+
+        if (
+          duplicate &&
+          duplicate.quantity === qty &&
+          ["reserved", "deducted"].includes(duplicate.status)
+        ) {
+          continue;
+        }
+
+        const available = fresh
+          ? Math.max(0, fresh.stock - (fresh.reservedStock || 0))
+          : 0;
+
         throw Object.assign(
           new Error(
-            `Insufficient stock: "${name}" (need ${qty}, available ${available}). ` +
+            `Insufficient stock: "${doc.name}" (need ${qty}, available ${available}). ` +
             `Please remove those items from your cart.`
           ),
-          { status: 409, shortfalls: [`"${name}" (need ${qty}, available ${available})`] }
+          {
+            status:     409,
+            shortfalls: [`"${doc.name}" (need ${qty}, available ${available})`],
+          }
         );
       }
 
-      reserved.push({ id, qty });
+      reservedNow.push({ id, qty });
     }
   } catch (err) {
-    // Roll back any reservations already made in this call
-    for (const { id, qty } of reserved) {
-      await Inventory.findByIdAndUpdate(id, { $inc: { reservedStock: -qty } })
-        .catch((e) => console.error(`Reservation rollback failed for ${id}:`, e.message));
+    // Compensating rollback: release every reservation we just created
+    for (const { id, qty } of reservedNow) {
+      await Inventory.findOneAndUpdate(
+        {
+          _id: id,
+          reservations: {
+            $elemMatch: { order: orderId, quantity: qty, status: "reserved" },
+          },
+        },
+        {
+          $inc: { reservedStock: -qty },
+          $set: { "reservations.$[r].status": "released" },
+        },
+        {
+          returnDocument: "after",
+          arrayFilters: [{ "r.order": orderId, "r.quantity": qty, "r.status": "reserved" }],
+        }
+      ).catch((rollbackErr) => {
+        console.error(`Reservation rollback failed for ${id}:`, rollbackErr.message);
+      });
     }
     throw err;
   }
@@ -158,34 +251,71 @@ const reserveStock = async (orderItems, orderId) => {
 
 /**
  * releaseReservation — decrements reservedStock (undoes reserveStock).
- * Called when an order is cancelled or payment fails.
- * Idempotent: clamps reservedStock at 0.
+ * Called when an order is cancelled before payment, or when payment fails.
+ * Idempotent: the $elemMatch filter on status "reserved" means a second call
+ * finds no matching document and silently skips.
  */
 const releaseReservation = async (orderItems, orderId, performedBy, reason) => {
   const counts = await buildIngredientMap(orderItems);
-  if (counts.size === 0) return;
+  if (counts.size === 0) return [];
 
   const ids  = [...counts.keys()];
   const docs = await Inventory.find({ _id: { $in: ids } });
+  const logs = [];
 
-  for (const doc of docs) {
-    if (doc.stock === -1) continue;
-    const qty = counts.get(doc._id.toString()) || 0;
-    // Clamp: never let reservedStock go below 0
-    const release = Math.min(qty, doc.reservedStock);
-    if (release <= 0) continue;
+  for (const [id, qty] of counts) {
+    const doc = docs.find((d) => d._id.toString() === id);
+    if (!doc || doc.stock === -1) continue;
 
-    await Inventory.findByIdAndUpdate(doc._id, { $inc: { reservedStock: -release } });
+    const updated = await Inventory.findOneAndUpdate(
+      {
+        _id: id,
+        reservedStock: { $gte: qty },
+        reservations: {
+          $elemMatch: { order: orderId, quantity: qty, status: "reserved" },
+        },
+      },
+      {
+        $inc: { reservedStock: -qty },
+        $set: { "reservations.$[r].status": "released" },
+      },
+      {
+        returnDocument: "after",
+        arrayFilters: [{ "r.order": orderId, "r.quantity": qty, "r.status": "reserved" }],
+      }
+    );
+
+    if (!updated) continue;
+
+    logs.push(
+      await writeLog(
+        doc, 0, doc.stock, doc.stock,
+        reason || "order_cancellation",
+        { order: orderId, performedBy }
+      )
+    );
   }
+
+  return logs;
 };
 
 /**
- * deductStock — atomically deducts physical stock and releases the reservation.
- * Uses a MongoDB transaction when the connection supports it (replica set).
- * Falls back to sequential atomic findOneAndUpdate ops on standalone mongod.
+ * deductStock — atomically converts each ingredient's reservation from
+ * "reserved" → "deducted" and decrements physical stock.
  *
- * Idempotency: the caller MUST set order.stockDeducted = true in the same
- * transaction / operation so duplicate calls are blocked at the order level.
+ * Idempotency:
+ *   - The $elemMatch filter requires status === "reserved". If the reservation
+ *     is already "deducted" (duplicate callback), the update finds no document
+ *     and the code skips that ingredient silently.
+ *   - The caller (confirmPayment / confirmCOD) additionally guards with the
+ *     Order.stockDeducted flag so this function is never called twice for the
+ *     same order.
+ *
+ * Rollback:
+ *   If any ingredient fails (e.g. stock was manually zeroed after reservation),
+ *   the catch block reverses every deduction already applied in this call by
+ *   converting "deducted" back to "reserved" and restoring stock. The order
+ *   remains in its pre-deduction state so the caller can handle the error.
  *
  * Returns an array of InventoryLog documents created.
  */
@@ -196,114 +326,109 @@ const deductStock = async (orderItems, orderId, performedBy) => {
   const ids  = [...counts.keys()];
   const docs = await Inventory.find({ _id: { $in: ids } });
 
-  // Check if the connection is part of a replica set (transactions require it)
-  const supportsTransactions =
-    mongoose.connection.readyState === 1 &&
-    mongoose.connection.db?.serverConfig?.isReplicaSet?.() === true;
-
-  if (supportsTransactions) {
-    return _deductWithTransaction(docs, counts, orderId, performedBy);
-  }
-  return _deductSequential(docs, counts, orderId, performedBy);
-};
-
-/**
- * Transaction-based deduction (replica set / Atlas).
- * All deductions succeed or all roll back — no partial state.
- */
-const _deductWithTransaction = async (docs, counts, orderId, performedBy) => {
-  const session = await mongoose.startSession();
-  const logs    = [];
+  const deducted = []; // { id, qty } — for rollback
+  const logs     = [];
 
   try {
-    await session.withTransaction(async () => {
-      for (const doc of docs) {
-        if (doc.stock === -1) continue;
-        const qty = counts.get(doc._id.toString()) || 0;
+    for (const [id, qty] of counts) {
+      const doc = docs.find((d) => d._id.toString() === id);
 
-        // Atomic: only update if stock is still sufficient
-        const updated = await Inventory.findOneAndUpdate(
-          { _id: doc._id, stock: { $gte: qty } },
-          {
-            $inc: { stock: -qty, reservedStock: -Math.min(qty, doc.reservedStock) },
+      if (!doc) {
+        throw Object.assign(
+          new Error(`Inventory item not found: ${id}`),
+          { status: 409 }
+        );
+      }
+
+      if (doc.stock === -1) continue;
+
+      const updated = await Inventory.findOneAndUpdate(
+        {
+          _id: id,
+          stock:         { $gte: qty },
+          reservedStock: { $gte: qty },
+          reservations: {
+            $elemMatch: { order: orderId, quantity: qty, status: "reserved" },
           },
-          { new: true, session }
+        },
+        {
+          $inc: { stock: -qty, reservedStock: -qty },
+          $set: { "reservations.$[r].status": "deducted" },
+        },
+        {
+          returnDocument: "after",
+          arrayFilters: [{ "r.order": orderId, "r.quantity": qty, "r.status": "reserved" }],
+        }
+      );
+
+      if (!updated) {
+        // Check whether this ingredient was already deducted (idempotent path)
+        const fresh = await Inventory.findById(id);
+        const existing = fresh?.reservations.find(
+          (r) => r.order.toString() === orderId.toString()
         );
 
-        if (!updated) {
+        if (existing?.status === "deducted") continue;
+
+        if (!existing) {
           throw Object.assign(
-            new Error(`Concurrent stock conflict for "${doc.name}" — transaction will retry`),
+            new Error(
+              `No inventory reservation found for "${doc.name}" and order ${orderId}.`
+            ),
             { status: 409 }
           );
         }
 
-        const logDocs = await writeLog(
-          doc, -qty, doc.stock, updated.stock,
-          "order_deduction",
-          { order: orderId, performedBy },
-          session
-        );
-        logs.push(...(Array.isArray(logDocs) ? logDocs : [logDocs]));
-      }
-    });
-  } finally {
-    await session.endSession();
-  }
-
-  return logs;
-};
-
-/**
- * Sequential deduction (standalone mongod — no transactions).
- * Each update is atomic at the document level via the $gte guard.
- * If any update fails the guard, we attempt to roll back already-deducted items.
- */
-const _deductSequential = async (docs, counts, orderId, performedBy) => {
-  const deducted = []; // track what we've already decremented for rollback
-  const logs     = [];
-
-  try {
-    for (const doc of docs) {
-      if (doc.stock === -1) continue;
-      const qty = counts.get(doc._id.toString()) || 0;
-
-      const updated = await Inventory.findOneAndUpdate(
-        { _id: doc._id, stock: { $gte: qty } },
-        {
-          $inc: {
-            stock:         -qty,
-            reservedStock: -Math.min(qty, doc.reservedStock),
-          },
-        },
-        { new: true }
-      );
-
-      if (!updated) {
-        // Race condition — another order consumed the stock between validate and deduct
         throw Object.assign(
           new Error(
-            `Stock for "${doc.name}" was consumed by a concurrent order. ` +
-            `Please try again.`
+            `Unable to deduct stock for "${doc.name}". ` +
+            `Its reservation is in state "${existing.status}".`
           ),
           { status: 409 }
         );
       }
 
-      deducted.push({ doc, qty });
+      deducted.push({ id, qty, doc, stockAfter: updated.stock });
 
-      const log = await writeLog(
-        doc, -qty, doc.stock, updated.stock,
-        "order_deduction",
-        { order: orderId, performedBy }
+      logs.push(
+        await writeLog(
+          doc, -qty, doc.stock, updated.stock,
+          "order_deduction",
+          { order: orderId, performedBy }
+        )
       );
-      logs.push(log);
     }
   } catch (err) {
-    // Compensating transaction: restore already-deducted items
-    for (const { doc, qty } of deducted) {
-      await Inventory.findByIdAndUpdate(doc._id, {
-        $inc: { stock: qty, reservedStock: qty },
-      }).catch((e) => console.error(`Rollback failed for ${doc.name}:`, e.message));
+    // Compensating rollback: restore every deduction applied in this call
+    for (const { id, qty, doc: rolledDoc, stockAfter: stockAtDeduction } of deducted.reverse()) {
+      const restored = await Inventory.findOneAndUpdate(
+        {
+          _id: id,
+          reservations: {
+            $elemMatch: { order: orderId, quantity: qty, status: "deducted" },
+          },
+        },
+        {
+          $inc: { stock: qty, reservedStock: qty },
+          $set: { "reservations.$[r].status": "reserved" },
+        },
+        {
+          returnDocument: "after",
+          arrayFilters: [{ "r.order": orderId, "r.quantity": qty, "r.status": "deducted" }],
+        }
+      ).catch((rollbackErr) => {
+        console.error(`Deduction rollback failed for ${id}:`, rollbackErr.message);
+        return null;
+      });
+
+      // Write a compensating audit log so the trail shows the reversal
+      if (restored) {
+        await writeLog(
+          rolledDoc, qty, stockAtDeduction, restored.stock,
+          "payment_failure",
+          { order: orderId, performedBy, note: "Deduction rolled back due to partial failure" }
+        ).catch((logErr) => console.error(`Rollback log failed for ${id}:`, logErr.message));
+      }
     }
     throw err;
   }
@@ -312,83 +437,147 @@ const _deductSequential = async (docs, counts, orderId, performedBy) => {
 };
 
 /**
- * restoreStock — returns stock after cancellation or payment failure.
- * Writes an audit log entry for each restored ingredient.
+ * restoreStock — returns physical stock after cancellation of a paid order.
+ * Only acts on reservations in "deducted" state, so it is safe to call even
+ * if the order was never deducted (no-op in that case).
+ * Idempotent: second call finds no "deducted" reservation and skips silently.
  */
 const restoreStock = async (orderItems, orderId, performedBy, reason) => {
   const counts = await buildIngredientMap(orderItems);
-  if (counts.size === 0) return;
+  if (counts.size === 0) return [];
 
   const ids  = [...counts.keys()];
   const docs = await Inventory.find({ _id: { $in: ids } });
+  const logs = [];
 
-  for (const doc of docs) {
-    if (doc.stock === -1) continue;
-    const qty = counts.get(doc._id.toString()) || 0;
+  for (const [id, qty] of counts) {
+    const doc = docs.find((d) => d._id.toString() === id);
+    if (!doc || doc.stock === -1) continue;
 
-    const updated = await Inventory.findByIdAndUpdate(
-      doc._id,
-      { $inc: { stock: qty } },
-      { new: true }
+    const updated = await Inventory.findOneAndUpdate(
+      {
+        _id: id,
+        reservations: {
+          $elemMatch: { order: orderId, quantity: qty, status: "deducted" },
+        },
+      },
+      {
+        $inc: { stock: qty },
+        $set: { "reservations.$[r].status": "restored" },
+      },
+      {
+        returnDocument: "after",
+        arrayFilters: [{ "r.order": orderId, "r.quantity": qty, "r.status": "deducted" }],
+      }
     );
 
-    await writeLog(
-      doc, qty, doc.stock, updated.stock,
-      reason,
-      { order: orderId, performedBy }
+    if (!updated) continue;
+
+    logs.push(
+      await writeLog(
+        doc, qty, doc.stock, updated.stock,
+        reason || "order_cancellation",
+        { order: orderId, performedBy }
+      )
     );
   }
+
+  return logs;
 };
 
 /**
  * adjustStock — admin manual adjustment (set absolute quantity).
- * Writes an audit log entry.
+ * Rejects values below the current reservedStock to prevent overselling
+ * already-reserved stock.
+ * Uses an optimistic-concurrency filter (stock === before) to detect
+ * concurrent changes and ask the admin to retry.
  */
 const adjustStock = async (ingredientId, newStock, performedBy, note) => {
   if (!Number.isInteger(newStock) || newStock < -1) {
-    throw Object.assign(new Error("stock must be an integer >= -1 (use -1 for unlimited)"), { status: 400 });
+    throw Object.assign(
+      new Error("stock must be an integer >= -1 (use -1 for unlimited)"),
+      { status: 400 }
+    );
   }
 
   const doc = await Inventory.findById(ingredientId);
-  if (!doc) throw Object.assign(new Error("Inventory item not found"), { status: 404 });
+  if (!doc) {
+    throw Object.assign(new Error("Inventory item not found"), { status: 404 });
+  }
 
-  const before = doc.stock;
-  doc.stock = newStock;
-  await doc.save();
+  const before   = doc.stock;
+  const reserved = doc.reservedStock || 0;
+
+  if (newStock !== -1 && newStock < reserved) {
+    throw Object.assign(
+      new Error(`Stock cannot be lower than reserved quantity (${reserved}).`),
+      { status: 409 }
+    );
+  }
+
+  const updated = await Inventory.findOneAndUpdate(
+    {
+      _id:           ingredientId,
+      stock:         before,
+      reservedStock: { $lte: newStock === -1 ? Number.MAX_SAFE_INTEGER : newStock },
+    },
+    { $set: { stock: newStock } },
+    { returnDocument: "after" }
+  );
+
+  if (!updated) {
+    throw Object.assign(
+      new Error("Stock changed concurrently. Please retry the adjustment."),
+      { status: 409 }
+    );
+  }
 
   await writeLog(
-    doc, newStock - before, before, newStock,
+    updated, newStock - before, before, newStock,
     "manual_adjustment",
     { performedBy, note }
   );
 
-  return doc;
+  return updated;
 };
 
 /**
- * addStock — admin restock (increment).
- * Writes an audit log entry.
+ * addStock — admin restock (increment by qty).
+ * Uses optimistic concurrency to detect concurrent changes.
  */
 const addStock = async (ingredientId, qty, performedBy, note) => {
   if (!Number.isInteger(qty) || qty <= 0) {
-    throw Object.assign(new Error("qty must be a positive integer"), { status: 400 });
+    throw Object.assign(
+      new Error("qty must be a positive integer"),
+      { status: 400 }
+    );
   }
 
   const doc = await Inventory.findById(ingredientId);
-  if (!doc) throw Object.assign(new Error("Inventory item not found"), { status: 404 });
+  if (!doc) {
+    throw Object.assign(new Error("Inventory item not found"), { status: 404 });
+  }
 
-  const before  = doc.stock;
-  const updated = doc.stock === -1
-    ? doc  // unlimited — no change to stock number
-    : await Inventory.findByIdAndUpdate(doc._id, { $inc: { stock: qty } }, { new: true });
+  if (doc.stock === -1) return doc; // unlimited — nothing to increment
 
-  if (doc.stock !== -1) {
-    await writeLog(
-      doc, qty, before, updated.stock,
-      "restock",
-      { performedBy, note }
+  const updated = await Inventory.findOneAndUpdate(
+    { _id: ingredientId, stock: doc.stock },
+    { $inc: { stock: qty } },
+    { returnDocument: "after" }
+  );
+
+  if (!updated) {
+    throw Object.assign(
+      new Error("Stock changed concurrently. Please retry the restock."),
+      { status: 409 }
     );
   }
+
+  await writeLog(
+    updated, qty, updated.stock - qty, updated.stock,
+    "restock",
+    { performedBy, note }
+  );
 
   return updated;
 };

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
 const AuthContext = createContext(null);
@@ -9,6 +10,22 @@ export const AuthProvider = ({ children }) => {
   });
   // true while the initial /auth/me validation is in-flight
   const [initializing, setInitializing] = useState(() => !!localStorage.getItem("token"));
+
+  // Listen for the auth:logout event dispatched by the Axios interceptor
+  // when a non-checkout endpoint returns 401. Use React Router navigate so
+  // the redirect is a SPA transition (no full page reload).
+  const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  useEffect(() => { navigateRef.current = navigate; }, [navigate]);
+
+  useEffect(() => {
+    const handler = () => {
+      setUser(null);
+      navigateRef.current("/", { replace: true });
+    };
+    window.addEventListener("auth:logout", handler);
+    return () => window.removeEventListener("auth:logout", handler);
+  }, []);
 
   // On mount: silently validate the stored token.
   // Clears stale/expired sessions without redirecting.
@@ -66,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, initializing, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, initializing, login, register, logout, updateUser, saveSession }}>
       {children}
     </AuthContext.Provider>
   );

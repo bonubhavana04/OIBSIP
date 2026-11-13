@@ -206,54 +206,85 @@ describe("reserveStock", () => {
 // 3. deductStock
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 describe("deductStock", () => {
-  test("decrements physical stock and releases reservation", async () => {
-    const ing = await makeIngredient({ stock: 10, reservedStock: 3 });
-    const user = await makeUser();
-    const order = await makeOrder(user._id, [ing._id], 1); // 3 refs
-
-    await deductStock(order.items, order._id, user._id);
-
-    const updated = await Inventory.findById(ing._id);
-    expect(updated.stock).toBe(7);          // 10 - 3
-    expect(updated.reservedStock).toBe(0);  // 3 - 3
-  });
-
-  test("writes InventoryLog entries for each deduction", async () => {
-    const ing = await makeIngredient({ stock: 10, reservedStock: 3 });
+  test("deducts physical stock and releases the order's reservation", async () => {
+    const ing = await makeIngredient({ stock: 10 });
     const user = await makeUser();
     const order = await makeOrder(user._id, [ing._id], 1);
 
+    await reserveStock(order.items, order._id);
+    await deductStock(order.items, order._id, user._id);
+
+    const updated = await Inventory.findById(ing._id);
+    expect(updated.stock).toBe(7);
+    expect(updated.reservedStock).toBe(0);
+
+    const reservation = updated.reservations.find(
+      (r) => r.order.toString() === order._id.toString()
+    );
+    expect(reservation.status).toBe("deducted");
+  });
+
+  test("writes an audit log for each deduction", async () => {
+    const ing = await makeIngredient({ stock: 10 });
+    const user = await makeUser();
+    const order = await makeOrder(user._id, [ing._id], 1);
+
+    await reserveStock(order.items, order._id);
     await deductStock(order.items, order._id, user._id);
 
     const logs = await InventoryLog.find({ ingredient: ing._id });
-    expect(logs.length).toBeGreaterThan(0);
+    expect(logs).toHaveLength(1);
     expect(logs[0].reason).toBe("order_deduction");
     expect(logs[0].delta).toBe(-3);
   });
 
-  test("throws and rolls back when stock is insufficient at deduction time", async () => {
-    // Simulate race: stock was 3 when reserved, but another order consumed it
-    const ing = await makeIngredient({ stock: 1, reservedStock: 0 }); // only 1 left
+  test("does not deduct the same order twice", async () => {
+    const ing = await makeIngredient({ stock: 10 });
     const user = await makeUser();
-    const order = await makeOrder(user._id, [ing._id], 1); // needs 3
+    const order = await makeOrder(user._id, [ing._id], 1);
 
-    await expect(deductStock(order.items, order._id, user._id)).rejects.toThrow();
+    await reserveStock(order.items, order._id);
+    await deductStock(order.items, order._id, user._id);
+    await deductStock(order.items, order._id, user._id);
 
-    // Stock should be unchanged after rollback
     const updated = await Inventory.findById(ing._id);
-    expect(updated.stock).toBe(1);
+    expect(updated.stock).toBe(7);
+    expect(updated.reservedStock).toBe(0);
+
+    const logs = await InventoryLog.find({ ingredient: ing._id });
+    expect(logs).toHaveLength(1);
   });
 
+  test("rejects deduction when an order has no reservation", async () => {
+  const ing = await makeIngredient({ stock: 10 });
+  const user = await makeUser();
+  const order = await makeOrder(user._id, [ing._id], 1);
+
+  await expect(
+    deductStock(order.items, order._id, user._id)
+  ).rejects.toMatchObject({
+    status: 409,
+  });
+
+  const updated = await Inventory.findById(ing._id);
+
+  expect(updated.stock).toBe(10);
+  expect(updated.reservedStock).toBe(0);
+  expect(await InventoryLog.countDocuments({ ingredient: ing._id })).toBe(0);
+});
   test("skips unlimited ingredients", async () => {
     const ing = await makeIngredient({ stock: -1 });
     const user = await makeUser();
     const order = await makeOrder(user._id, [ing._id], 5);
 
+    await reserveStock(order.items, order._id);
     await deductStock(order.items, order._id, user._id);
 
     const updated = await Inventory.findById(ing._id);
     expect(updated.stock).toBe(-1);
+    expect(updated.reservedStock).toBe(0);
   });
 });
 
@@ -261,9 +292,9 @@ describe("deductStock", () => {
 // 4. Concurrent orders competing for the same stock
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 describe("concurrent orders competing for the same stock", () => {
   test("only one of two simultaneous reservations succeeds when stock is tight", async () => {
-    // stock=3 → exactly enough for one order (3 refs), not two
     const ing = await makeIngredient({ stock: 3 });
     const user = await makeUser();
 
@@ -275,40 +306,51 @@ describe("concurrent orders competing for the same stock", () => {
       reserveStock(order2.items, order2._id),
     ]);
 
-    const fulfilled = results.filter((r) => r.status === "fulfilled");
-    const rejected  = results.filter((r) => r.status === "rejected");
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(results.filter((r) => r.status === "rejected")).toHaveLength(1);
 
-    // Exactly one should succeed, one should fail
-    expect(fulfilled.length).toBe(1);
-    expect(rejected.length).toBe(1);
-    expect(rejected[0].reason.message).toMatch(/Insufficient stock/);
-
-    // reservedStock should be exactly 3 (one order's worth)
     const updated = await Inventory.findById(ing._id);
     expect(updated.reservedStock).toBe(3);
+    expect(updated.stock).toBe(3);
+    expect(updated.reservations.filter((r) => r.status === "reserved")).toHaveLength(1);
   });
 
-  test("concurrent deductions: $gte guard prevents overselling", async () => {
-    // stock=3, two orders both try to deduct 3 simultaneously
-    const ing = await makeIngredient({ stock: 3, reservedStock: 0 });
+  test("repeated reservation calls for the same order do not reserve twice", async () => {
+    const ing = await makeIngredient({ stock: 10 });
+    const user = await makeUser();
+    const order = await makeOrder(user._id, [ing._id], 1);
+
+    await Promise.all([
+      reserveStock(order.items, order._id),
+      reserveStock(order.items, order._id),
+    ]);
+
+    const updated = await Inventory.findById(ing._id);
+    expect(updated.reservedStock).toBe(3);
+    expect(updated.reservations).toHaveLength(1);
+  });
+
+  test("two separately reserved orders can deduct without overselling", async () => {
+    const ing = await makeIngredient({ stock: 6 });
     const user = await makeUser();
 
     const order1 = await makeOrder(user._id, [ing._id], 1);
     const order2 = await makeOrder(user._id, [ing._id], 1);
+
+    await reserveStock(order1.items, order1._id);
+    await reserveStock(order2.items, order2._id);
 
     const results = await Promise.allSettled([
       deductStock(order1.items, order1._id, user._id),
       deductStock(order2.items, order2._id, user._id),
     ]);
 
-    const fulfilled = results.filter((r) => r.status === "fulfilled");
-    const rejected  = results.filter((r) => r.status === "rejected");
-
-    // At least one must fail — stock cannot go below 0
-    expect(rejected.length).toBeGreaterThanOrEqual(1);
+    expect(results.every((r) => r.status === "fulfilled")).toBe(true);
 
     const updated = await Inventory.findById(ing._id);
-    expect(updated.stock).toBeGreaterThanOrEqual(0);
+    expect(updated.stock).toBe(0);
+    expect(updated.reservedStock).toBe(0);
+    expect(updated.reservations.filter((r) => r.status === "deducted")).toHaveLength(2);
   });
 });
 
@@ -318,10 +360,10 @@ describe("concurrent orders competing for the same stock", () => {
 
 describe("duplicate payment notifications", () => {
   test("stockDeducted flag prevents double deduction", async () => {
-    const ing = await makeIngredient({ stock: 10, reservedStock: 3 });
+    const ing = await makeIngredient({ stock: 10, reservedStock: 0 });
     const user = await makeUser();
     const order = await makeOrder(user._id, [ing._id], 1);
-
+    await reserveStock(order.items, order._id);
     // First deduction
     await deductStock(order.items, order._id, user._id);
     await Order.findByIdAndUpdate(order._id, { stockDeducted: true });
@@ -350,12 +392,12 @@ describe("duplicate payment notifications", () => {
       Order.findOneAndUpdate(
         { _id: order._id, stockDeducted: false },
         { $set: { stockDeducted: true } },
-        { new: false }
+        { returnDocument: 'before' }
       ),
       Order.findOneAndUpdate(
         { _id: order._id, stockDeducted: false },
         { $set: { stockDeducted: true } },
-        { new: false }
+        { returnDocument: 'before' }
       ),
     ]);
 
@@ -369,29 +411,63 @@ describe("duplicate payment notifications", () => {
 // 6. releaseReservation
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("releaseReservation", () => {
-  test("decrements reservedStock without touching physical stock", async () => {
-    const ing = await makeIngredient({ stock: 10, reservedStock: 3 });
-    const user = await makeUser();
-    const order = await makeOrder(user._id, [ing._id], 1);
 
-    await releaseReservation(order.items, order._id, user._id, "order_cancellation");
+describe("releaseReservation", () => {
+  test("releases only the specified order's reservation", async () => {
+    const ing = await makeIngredient({ stock: 10 });
+    const user = await makeUser();
+
+    const order1 = await makeOrder(user._id, [ing._id], 1);
+    const order2 = await makeOrder(user._id, [ing._id], 1);
+
+    await reserveStock(order1.items, order1._id);
+    await reserveStock(order2.items, order2._id);
+
+    await releaseReservation(
+      order1.items,
+      order1._id,
+      user._id,
+      "order_cancellation"
+    );
 
     const updated = await Inventory.findById(ing._id);
-    expect(updated.stock).toBe(10);         // unchanged
-    expect(updated.reservedStock).toBe(0);  // released
+
+    expect(updated.stock).toBe(10);
+    expect(updated.reservedStock).toBe(3);
+
+    const first = updated.reservations.find(
+      (r) => r.order.toString() === order1._id.toString()
+    );
+    const second = updated.reservations.find(
+      (r) => r.order.toString() === order2._id.toString()
+    );
+
+    expect(first.status).toBe("released");
+    expect(second.status).toBe("reserved");
   });
 
-  test("clamps reservedStock at 0 (idempotent double-release)", async () => {
-    const ing = await makeIngredient({ stock: 10, reservedStock: 3 });
+  test("does not release the same reservation twice", async () => {
+    const ing = await makeIngredient({ stock: 10 });
     const user = await makeUser();
     const order = await makeOrder(user._id, [ing._id], 1);
 
+    await reserveStock(order.items, order._id);
+
     await releaseReservation(order.items, order._id, user._id, "order_cancellation");
-    await releaseReservation(order.items, order._id, user._id, "order_cancellation"); // second call
+    await releaseReservation(order.items, order._id, user._id, "order_cancellation");
 
     const updated = await Inventory.findById(ing._id);
-    expect(updated.reservedStock).toBeGreaterThanOrEqual(0);
+
+    expect(updated.reservedStock).toBe(0);
+    expect(updated.stock).toBe(10);
+
+    const reservation = updated.reservations.find(
+      (r) => r.order.toString() === order._id.toString()
+    );
+    expect(reservation.status).toBe("released");
+
+    const logs = await InventoryLog.find({ ingredient: ing._id });
+    expect(logs.filter((log) => log.reason === "order_cancellation")).toHaveLength(1);
   });
 });
 
@@ -399,23 +475,65 @@ describe("releaseReservation", () => {
 // 7. restoreStock (cancellation after deduction)
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 describe("restoreStock", () => {
-  test("returns physical stock and writes audit log", async () => {
-    const ing = await makeIngredient({ stock: 7 }); // after deduction
+  test("restores stock only after a successful deduction", async () => {
+    const ing = await makeIngredient({ stock: 10 });
     const user = await makeUser();
-    const order = await makeOrder(user._id, [ing._id], 1); // 3 refs
+    const order = await makeOrder(user._id, [ing._id], 1);
+
+    await reserveStock(order.items, order._id);
+    await deductStock(order.items, order._id, user._id);
+    await restoreStock(order.items, order._id, user._id, "order_cancellation");
+
+    const updated = await Inventory.findById(ing._id);
+
+    expect(updated.stock).toBe(10);
+    expect(updated.reservedStock).toBe(0);
+
+    const reservation = updated.reservations.find(
+      (r) => r.order.toString() === order._id.toString()
+    );
+    expect(reservation.status).toBe("restored");
+
+    const logs = await InventoryLog.find({ ingredient: ing._id });
+    expect(logs.filter((log) => log.reason === "order_cancellation")).toHaveLength(1);
+  });
+
+  test("does not restore the same order twice", async () => {
+    const ing = await makeIngredient({ stock: 10 });
+    const user = await makeUser();
+    const order = await makeOrder(user._id, [ing._id], 1);
+
+    await reserveStock(order.items, order._id);
+    await deductStock(order.items, order._id, user._id);
+
+    await restoreStock(order.items, order._id, user._id, "order_cancellation");
+    await restoreStock(order.items, order._id, user._id, "order_cancellation");
+
+    const updated = await Inventory.findById(ing._id);
+    expect(updated.stock).toBe(10);
+
+    const logs = await InventoryLog.find({
+      ingredient: ing._id,
+      reason: "order_cancellation",
+    });
+    expect(logs).toHaveLength(1);
+  });
+
+  test("does not restore stock for an order without a deduction record", async () => {
+    const ing = await makeIngredient({ stock: 7 });
+    const user = await makeUser();
+    const order = await makeOrder(user._id, [ing._id], 1);
 
     await restoreStock(order.items, order._id, user._id, "order_cancellation");
 
     const updated = await Inventory.findById(ing._id);
-    expect(updated.stock).toBe(10); // 7 + 3
-
-    const logs = await InventoryLog.find({ ingredient: ing._id });
-    expect(logs.length).toBe(1);
-    expect(logs[0].reason).toBe("order_cancellation");
-    expect(logs[0].delta).toBe(3);
+    expect(updated.stock).toBe(7);
+    expect(await InventoryLog.countDocuments({ ingredient: ing._id })).toBe(0);
   });
 });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 8. Admin stock adjustments
@@ -482,44 +600,80 @@ describe("adjustStock / addStock", () => {
 // 9. Transaction failure / rollback
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("transaction failure rollback (_deductSequential)", () => {
-  test("rolls back already-deducted items when a later item fails", async () => {
-    // Two separate ingredients; second one has insufficient stock
-    const ing1 = await makeIngredient({ name: "Base A",   category: "base",   stock: 10 });
-    const ing2 = await makeIngredient({ name: "Sauce A",  category: "sauce",  stock: 1  });
+
+describe("transaction failure rollback", () => {
+  test("does not leave partial deductions when a later ingredient fails", async () => {
+    const ing1 = await makeIngredient({
+      name: "Base A",
+      category: "base",
+      stock: 10,
+    });
+
+    const ing2 = await makeIngredient({
+      name: "Sauce A",
+      category: "sauce",
+      stock: 10,
+    });
+
     const user = await makeUser();
 
-    // Build an order that uses ing1 as base AND ing2 as sauce
     const order = await Order.create({
-      user:            user._id,
+      user: user._id,
       items: [{
         itemType: "custom",
-        name:     "Custom Pizza",
-        size:     "Medium",
-        priceP:   19900,
+        name: "Custom Pizza",
+        size: "Medium",
+        priceP: 19900,
         quantity: 1,
         customPizza: {
-          base:        ing1._id,
-          sauce:       ing2._id,
-          cheese:      ing2._id,  // ing2 used twice → needs 2, has 1
-          veggies:     [],
-          baseName:    "Base A",
-          sauceName:   "Sauce A",
-          cheeseName:  "Sauce A",
+          base: ing1._id,
+          sauce: ing2._id,
+          cheese: ing2._id,
+          veggies: [],
+          baseName: "Base A",
+          sauceName: "Sauce A",
+          cheeseName: "Sauce A",
           veggieNames: [],
         },
       }],
-      deliveryAddress: { street: "1 Test St", city: "Mumbai", state: "MH", pincode: "400001" },
-      subtotalP: 19900, deliveryFeeP: 4000, totalP: 23900,
+      deliveryAddress: {
+        street: "1 Test St",
+        city: "Mumbai",
+        state: "MH",
+        pincode: "400001",
+      },
+      subtotalP: 19900,
+      deliveryFeeP: 4000,
+      totalP: 23900,
       payment: { method: "cod" },
       statusHistory: [{ status: "pending" }],
     });
 
-    await expect(deductStock(order.items, order._id, user._id)).rejects.toThrow();
+    await reserveStock(order.items, order._id);
 
-    // ing1 must be restored to 10 (rollback)
+    // Simulate a stock conflict after reservation.
+    await Inventory.updateOne(
+      { _id: ing2._id },
+      { $set: { stock: 1 } }
+    );
+
+    await expect(
+      deductStock(order.items, order._id, user._id)
+    ).rejects.toThrow();
+
     const updated1 = await Inventory.findById(ing1._id);
-    expect(updated1.stock).toBe(10);
+    const updated2 = await Inventory.findById(ing2._id);
+
+   expect(updated1.stock).toBe(10);
+   expect(updated1.reservedStock).toBe(1);
+   expect(updated2.stock).toBe(1);
+   expect(updated2.reservedStock).toBe(2);
+
+    const reservation1 = updated1.reservations.find(
+      (r) => r.order.toString() === order._id.toString()
+    );
+
+    expect(reservation1.status).toBe("reserved");
   });
 });
 

@@ -25,9 +25,12 @@ const pizzaSchema = new mongoose.Schema(
     image:       { type: String },
     sizes:       { type: [sizeSchema], required: true, validate: [(v) => v.length > 0, "At least one size required"] },
     toppings:    [{ type: String, trim: true }],
-    isVeg:       { type: Boolean, default: true },
-    isAvailable: { type: Boolean, default: true },
-    isFeatured:  { type: Boolean, default: false },
+    isVeg:        { type: Boolean, default: true },
+    isAvailable:  { type: Boolean, default: true },
+    isFeatured:   { type: Boolean, default: false },
+    isBestseller:   { type: Boolean, default: false },
+    isNewArrival:   { type: Boolean, default: false },
+    spiceLevel:     { type: String, enum: ["mild", "medium", "hot", "extra-hot"], default: "mild" },
     ratings: {
       average: { type: Number, default: 0, min: 0, max: 5 },
       count:   { type: Number, default: 0, min: 0 },
@@ -44,6 +47,8 @@ const pizzaSchema = new mongoose.Schema(
 pizzaSchema.index({ name: "text", description: "text" });
 pizzaSchema.index({ category: 1, isAvailable: 1 });
 pizzaSchema.index({ isFeatured: 1, isAvailable: 1 });
+pizzaSchema.index({ isBestseller: 1, isAvailable: 1 });
+pizzaSchema.index({ isNewArrival: 1, isAvailable: 1 });
 pizzaSchema.index({ isVeg: 1, isAvailable: 1 });
 
 module.exports = mongoose.model("Pizza", pizzaSchema);

@@ -51,6 +51,7 @@ const seed = async () => {
     email:           email.toLowerCase().trim(),
     password,
     role:            "admin",
+    isActive:        true,
     isEmailVerified: true,   // admin accounts are pre-verified
   });
 

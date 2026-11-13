@@ -75,19 +75,68 @@ const orderSchema = new mongoose.Schema(
     // All monetary values in PAISE
     subtotalP:    { type: Number, required: true, min: 0 },
     deliveryFeeP: { type: Number, default: 4000 },   // ₹40 = 4000 paise
+    discountP:    { type: Number, default: 0, min: 0 },  // promo discount in paise
+    promoCode:    { type: String, trim: true, uppercase: true },
     totalP:       { type: Number, required: true, min: 0 },
 
     status:        { type: String, enum: ORDER_STATUSES, default: "pending", index: true },
     statusHistory: { type: [statusHistorySchema], default: [] },
 
     payment: {
-      method:              { type: String, enum: ["razorpay", "cod"], default: "cod" },
-      status:              { type: String, enum: ["pending", "paid", "failed", "refunded"], default: "pending" },
-      razorpayOrderId:     { type: String, index: true },
-      razorpayPaymentId:   { type: String, index: true, sparse: true },
-      razorpaySignature:   { type: String },   // stored for idempotency audit
-      paidAt:              { type: Date },
-    },
+  method: {
+    type: String,
+    enum: ["razorpay", "cod"],
+    default: "cod",
+  },
+  status: {
+    type: String,
+    enum: ["pending", "paid", "failed", "refunded"],
+    default: "pending",
+  },
+  razorpayOrderId: {
+    type: String,
+    index: true,
+  },
+  razorpayPaymentId: {
+    type: String,
+    index: true,
+    sparse: true,
+  },
+  razorpaySignature: {
+    type: String,
+  },
+  paidAt: {
+    type: Date,
+  },
+
+  // Automatic refund tracking
+  refundStatus: {
+    type: String,
+    enum: ["none", "pending", "processed", "failed"],
+    default: "none",
+  },
+  razorpayRefundId: {
+    type: String,
+  },
+  refundAmountP: {
+    type: Number,
+    min: 0,
+  },
+  refundInitiatedAt: {
+    type: Date,
+  },
+  refundedAt: {
+    type: Date,
+  },
+  refundFailureReason: {
+    type: String,
+    maxlength: 500,
+  },
+  refundIdempotencyKey: {
+  type: String,
+  default: null,
+},
+},
 
     estimatedDelivery: { type: Date },
     notes:             { type: String, trim: true },
@@ -97,7 +146,19 @@ const orderSchema = new mongoose.Schema(
     // stockDeducted: set when payment is confirmed (physical deduction).
     // Prevents double-deduction from duplicate payment callbacks / webhooks.
     stockReserved: { type: Boolean, default: false },
-    stockDeducted: { type: Boolean, default: false, index: true },
+stockDeducted: { type: Boolean, default: false, index: true },
+paymentProcessing: {
+  type: Boolean,
+  default: false,
+},
+paymentProcessingAt: {
+  type: Date,
+  default: null,
+},
+orderConfirmationEmailSent: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true,
@@ -109,6 +170,7 @@ const orderSchema = new mongoose.Schema(
 // ── Virtuals (rupee display) ──────────────────────────────────────────────────
 orderSchema.virtual("subtotal").get(function () { return Math.round(this.subtotalP / 100); });
 orderSchema.virtual("deliveryFee").get(function () { return Math.round(this.deliveryFeeP / 100); });
+orderSchema.virtual("discount").get(function () { return Math.round((this.discountP || 0) / 100); });
 orderSchema.virtual("total").get(function () { return Math.round(this.totalP / 100); });
 
 // ── Indexes ───────────────────────────────────────────────────────────────────

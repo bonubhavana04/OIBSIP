@@ -18,12 +18,17 @@ const normaliseSizes = (sizes) =>
 
 // GET /api/pizzas
 const getAllPizzas = async (req, res) => {
-  const { category, isVeg, isFeatured, search, sort } = req.query;
-  const filter = { isAvailable: true };
+  const { category, isVeg, isFeatured, isBestseller, isNewArrival, search, sort, limit } = req.query;
+  const filter = {};
+
+  // Admins can fetch unavailable pizzas (e.g. for the management UI)
+  if (req.user?.role !== "admin") filter.isAvailable = true;
 
   if (category)   filter.category   = category;
   if (isVeg !== undefined) filter.isVeg = isVeg === "true";
   if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
+  if (isBestseller !== undefined) filter.isBestseller = isBestseller === "true";
+  if (isNewArrival !== undefined) filter.isNewArrival = isNewArrival === "true";
   if (search)     filter.$text = { $search: search };
 
   const sortMap = {
@@ -33,11 +38,14 @@ const getAllPizzas = async (req, res) => {
     newest:     { createdAt: -1 },
   };
 
-  const pizzas = await Pizza.find(filter)
+  let query = Pizza.find(filter)
     .populate("category", "name emoji")
     .sort(sortMap[sort] || { createdAt: -1 });
 
-  // Attach a `sizes` array with both priceP and price (rupees) for the frontend
+  if (limit) query = query.limit(Number(limit));
+
+  const pizzas = await query;
+
   const result = pizzas.map((p) => {
     const obj = p.toObject();
     obj.sizes = obj.sizes.map((s) => ({ ...s, price: Math.round(s.priceP / 100) }));

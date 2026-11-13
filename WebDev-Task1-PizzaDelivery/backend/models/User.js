@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6, select: false },
     phone:    { type: String, trim: true },
     role:     { type: String, enum: ["user", "admin"], default: "user" },
+    isActive: { type: Boolean, default: true },
 
     // Email verification (UI flow exists; backend token generation added here)
     isEmailVerified:      { type: Boolean, default: false },

@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
+import { getPizzaImage } from "../utils/pizzaImages";
 
-const PIZZA_EMOJIS = ["🍕", "🫓", "🧀", "🌶️", "🍅"];
+const SPICE_ICON = { mild: "🟡", medium: "🟠", hot: "🔴", "extra-hot": "🔥" };
 
-export default function PizzaCard({ pizza, index = 0 }) {
+export default function PizzaCard({ pizza }) {
   const { addMenuItem } = useCart();
   const [size, setSize] = useState("Medium");
   const [adding, setAdding] = useState(false);
 
   const sizeData = pizza.sizes.find((s) => s.label === size) || pizza.sizes[0];
-  // Display price in rupees — prefer virtual `price`, fall back to priceP/100
   const displayPrice = sizeData?.price ?? Math.round((sizeData?.priceP ?? 0) / 100);
+  const imageUrl = getPizzaImage(pizza);
 
   const handleAdd = () => {
     setAdding(true);
@@ -22,13 +23,28 @@ export default function PizzaCard({ pizza, index = 0 }) {
 
   return (
     <div className="pizza-card">
-      {pizza.image ? (
-        <img src={pizza.image} alt={pizza.name} className="pizza-card-img" loading="lazy" />
-      ) : (
-        <div className="pizza-card-img-placeholder">
-          {PIZZA_EMOJIS[index % PIZZA_EMOJIS.length]}
+      {/* Badges */}
+      <div style={{ position: "relative" }}>
+        <img
+          src={imageUrl}
+          alt={pizza.name}
+          className="pizza-card-img"
+          loading="lazy"
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&q=80"; }}
+        />
+        <div style={{ position: "absolute", top: "0.5rem", left: "0.5rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          {pizza.isBestseller && (
+            <span style={{ background: "#e67e22", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.04em" }}>
+              ⭐ BESTSELLER
+            </span>
+          )}
+          {pizza.isNewArrival && (
+            <span style={{ background: "var(--red)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.04em" }}>
+              🆕 NEW
+            </span>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="pizza-card-body">
         <div className="pizza-card-header">
@@ -38,14 +54,23 @@ export default function PizzaCard({ pizza, index = 0 }) {
           </span>
         </div>
 
-        {pizza.ratings?.average > 0 && (
-          <div className="pizza-rating">
-            ★ {pizza.ratings.average.toFixed(1)}
-            <span style={{ color: "var(--charcoal-soft)", fontWeight: 400 }}>
-              {" "}· {pizza.category?.name || ""}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", flexWrap: "wrap" }}>
+          {pizza.ratings?.average > 0 && (
+            <span className="pizza-rating" style={{ margin: 0 }}>
+              ★ {pizza.ratings.average.toFixed(1)}
             </span>
-          </div>
-        )}
+          )}
+          {pizza.category?.name && (
+            <span style={{ fontSize: "0.72rem", color: "var(--charcoal-soft)" }}>
+              {pizza.category.emoji} {pizza.category.name}
+            </span>
+          )}
+          {pizza.spiceLevel && pizza.spiceLevel !== "mild" && (
+            <span style={{ fontSize: "0.72rem", color: "var(--charcoal-soft)" }}>
+              {SPICE_ICON[pizza.spiceLevel]} {pizza.spiceLevel}
+            </span>
+          )}
+        </div>
 
         <p className="pizza-desc">{pizza.description}</p>
 

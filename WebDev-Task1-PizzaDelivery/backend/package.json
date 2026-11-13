@@ -10,8 +10,11 @@
     "seed:menu": "node seedMenu.js",
     "seed:inventory": "node seedInventory.js",
     "seed:all": "node seedAdmin.js && node seedMenu.js && node seedInventory.js",
+    "reset:admin-password": "node resetAdminPassword.js",
     "test": "jest --runInBand --forceExit",
-    "test:watch": "jest --runInBand --watch"
+    "test:watch": "jest --runInBand --watch",
+    "test:low-stock": "node -e \"require('dotenv').config(); const {sendLowStockAlert}=require('./utils/mailer'); sendLowStockAlert([{name:'Test Dough',category:'base',stock:3,lowStockThreshold:10}]).then(i=>console.log('SMTP accepted:',i?.accepted)).catch(e=>console.error('SMTP error:',e.message))\"",
+    "test:razorpay-keys": "node -e \"require('dotenv').config(); const k=process.env.RAZORPAY_KEY_ID; const s=process.env.RAZORPAY_KEY_SECRET; const w=process.env.RAZORPAY_WEBHOOK_SECRET; if(!k||!s||!w){console.error('❌ Missing Razorpay env vars');process.exit(1)} if(!k.startsWith('rzp_test_')){console.error('❌ RAZORPAY_KEY_ID must start with rzp_test_ — never use live keys');process.exit(1)} const R=require('razorpay'); const rzp=new R({key_id:k,key_secret:s}); rzp.orders.create({amount:100,currency:'INR',receipt:'test'}).then(o=>console.log('✅ Razorpay test-mode OK — order id:',o.id)).catch(e=>console.error('❌ Razorpay error:',e.message))\""
   },
   "keywords": [
     "pizza",

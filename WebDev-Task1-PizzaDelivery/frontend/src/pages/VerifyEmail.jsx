@@ -1,31 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const token          = searchParams.get("token");
-
+  const requestStarted = useRef(false);
   const [status, setStatus] = useState("loading"); // "loading" | "success" | "error"
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("No verification token found in the link.");
-      return;
-    }
+ useEffect(() => {
+  if (!token) {
+    setStatus("error");
+    setMessage("No verification token found in the link.");
+    return;
+  }
 
-    api.get(`/auth/verify-email?token=${token}`)
-      .then(({ data }) => {
-        setStatus("success");
-        setMessage(data.message);
-      })
-      .catch((err) => {
-        setStatus("error");
-        setMessage(err.response?.data?.message || "Verification failed. The link may have expired.");
-      });
-  }, [token]);
+  if (requestStarted.current) return;
+  requestStarted.current = true;
+
+  api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`)
+    .then(({ data }) => {
+      setStatus("success");
+      setMessage(data.message);
+    })
+    .catch((err) => {
+      setStatus("error");
+      setMessage(
+        err.response?.data?.message ||
+        "Verification failed. The link may have expired."
+      );
+    });
+}, [token]);
 
   return (
     <div className="auth-page">

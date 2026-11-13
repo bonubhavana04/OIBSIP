@@ -164,9 +164,60 @@ const sendStatusUpdate = async (order) => {
   });
 };
 
+// ── Low-stock admin alert ────────────────────────────────────────────────────
+/**
+ * items: Array<{ name, category, stock, lowStockThreshold }>
+ * Throws on SMTP rejection so the caller can decide whether to persist the alert.
+ * Returns the accepted message info object on success.
+ */
+const sendLowStockAlert = async (items) => {
+  if (!canSend()) {
+    console.warn("[low-stock] SMTP not configured — skipping email");
+    return null;
+  }
+
+  const rows = items
+    .map(
+      (i) =>
+        `<tr>
+          <td style="padding:6px 8px;border-bottom:1px solid #f5ede0">${i.name}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #f5ede0;text-transform:capitalize">${i.category}</td>
+          <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #f5ede0;color:#c0392b;font-weight:700">${i.stock}</td>
+          <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #f5ede0">${i.lowStockThreshold}</td>
+        </tr>`
+    )
+    .join("");
+
+  const to = process.env.ALERT_ADMIN_EMAIL || process.env.EMAIL_USER;
+  const info = await getTransporter().sendMail({
+    from:    `"Cravello Alerts" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `⚠️ Low Stock Alert — ${items.length} item${items.length > 1 ? "s" : ""} need restocking`,
+    html: shell(
+      "⚠️ Low Stock Alert",
+      `<p>The following ingredient${items.length > 1 ? "s are" : " is"} running low and need${items.length === 1 ? "s" : ""} restocking:</p>
+       <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;border-collapse:collapse">
+         <thead>
+           <tr style="background:#fdf8f3">
+             <th style="padding:8px;text-align:left;font-size:13px">Item</th>
+             <th style="padding:8px;text-align:left;font-size:13px">Category</th>
+             <th style="padding:8px;text-align:center;font-size:13px">In Stock</th>
+             <th style="padding:8px;text-align:center;font-size:13px">Threshold</th>
+           </tr>
+         </thead>
+         <tbody>${rows}</tbody>
+       </table>
+       <p style="font-size:13px;color:#6b6b6b">Please restock these items to avoid order fulfilment issues.</p>`
+    ),
+  });
+
+  return info; // caller can inspect info.accepted / info.rejected
+};
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendOrderConfirmation,
   sendStatusUpdate,
+  sendLowStockAlert,
 };

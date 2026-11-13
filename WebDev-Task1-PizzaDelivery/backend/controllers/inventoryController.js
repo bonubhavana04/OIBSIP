@@ -2,6 +2,7 @@ const Inventory       = require("../models/Inventory");
 const InventoryLog    = require("../models/InventoryLog");
 const PizzaIngredient = require("../models/PizzaIngredient");
 const { adjustStock, addStock } = require("../utils/inventoryService");
+const { clearLowStockAlert } = require("../utils/cronJobs");
 
 const CATEGORIES = ["base", "sauce", "cheese", "veggie"];
 
@@ -96,6 +97,8 @@ const restock = async (req, res) => {
     return res.status(400).json({ message: "quantity must be a positive integer" });
 
   const item = await addStock(req.params.id, quantity, req.user._id, note || "Admin restock");
+  // If restocked above threshold, clear the active alert so the next dip fires a fresh email
+  if (item.stock > item.lowStockThreshold) await clearLowStockAlert(item._id);
   res.json({ item, message: `Restocked by ${quantity} units` });
 };
 
@@ -109,6 +112,8 @@ const adjust = async (req, res) => {
     return res.status(400).json({ message: "stock must be an integer >= -1 (use -1 for unlimited)" });
 
   const item = await adjustStock(req.params.id, stock, req.user._id, note || "Admin manual adjustment");
+  // Clear alert if stock is now above threshold (or unlimited)
+  if (stock === -1 || stock > item.lowStockThreshold) await clearLowStockAlert(item._id);
   res.json({ item, message: `Stock set to ${stock}` });
 };
 
@@ -200,8 +205,41 @@ const setPizzaIngredients = async (req, res) => {
   res.json({ recipe, message: `Recipe updated — ${recipe.length} ingredient(s) set` });
 };
 
+// ── POST /api/inventory/admin/test-low-stock-alert  [admin] ─────────────────────
+// Manual trigger for development / ops testing. Bypasses dedup so you can
+// verify SMTP without waiting for the cron or manipulating stock.
+const triggerLowStockCheck = async (req, res) => {
+  const lowItems = await Inventory.find({
+    stock: { $gte: 0 },
+    $expr: { $lte: ["$stock", "$lowStockThreshold"] },
+  }).lean();
+
+  const items = lowItems.map((i) => ({ name: i.name, stock: i.stock, threshold: i.lowStockThreshold }));
+
+  if (!lowItems.length) return res.json({ message: "No low-stock items found", sent: false, items });
+
+  const { sendLowStockAlert } = require("../utils/mailer");
+  try {
+    const info = await sendLowStockAlert(lowItems);
+    // info is null when SMTP is not configured (canSend() === false)
+    if (!info) return res.json({ message: "SMTP not configured — email skipped", sent: false, items });
+    const accepted = info.accepted?.length ?? 0;
+    const rejected = info.rejected?.length ?? 0;
+    res.json({
+      message: accepted > 0 ? `Alert accepted by SMTP for ${lowItems.length} item(s)` : "SMTP rejected all recipients",
+      items,
+      smtpAccepted: accepted,
+      smtpRejected: rejected,
+      sent: accepted > 0,
+    });
+  } catch (err) {
+    res.status(502).json({ message: "SMTP error", error: err.message, sent: false, items });
+  }
+};
+
 module.exports = {
   getAll, getLowStock, getOne, create, update, remove,
   restock, adjust, getLogs, getAllLogs,
   getPizzaIngredients, setPizzaIngredients,
+  triggerLowStockCheck,
 };

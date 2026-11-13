@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { getPizzaImage } from "../utils/pizzaImages";
 
 const DELIVERY_FEE = 40;
 
@@ -48,8 +49,17 @@ export default function Cart() {
             // Line total computed from paise to avoid rounding drift
             const lineTotal = Math.round(item.priceP * item.quantity / 100);
 
+            const imageUrl = getPizzaImage(item.pizza);
+
             return (
               <div key={item.cartId} className="cart-item">
+                <img
+                  src={imageUrl}
+                  alt={item.pizza.name}
+                  className="cart-item-img"
+                  loading="lazy"
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&q=80"; }}
+                />
                 <div className="cart-item-info">
                   <span
                     className={`veg-dot ${item.pizza.isVeg ? "veg" : "non-veg"}`}

@@ -19,6 +19,8 @@ router.post(
 );
 
 // ── All other payment routes require a valid JWT ──────────────────────────────
+// Parse JSON for the remaining payment endpoints.
+router.use(express.json({ limit: "10kb" }));
 router.use(protect);
 
 router.post("/create-order", createRazorpayOrder);

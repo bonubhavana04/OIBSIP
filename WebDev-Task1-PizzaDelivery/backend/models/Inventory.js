@@ -22,6 +22,29 @@ const inventorySchema = new mongoose.Schema(
     priceP:      { type: Number, required: true, min: 0, default: 0 },  // paise
     stock:         { type: Number, default: -1 },   // -1 = unlimited
     reservedStock: { type: Number, default: 0, min: 0 }, // held for pending payments
+  reservations: {
+  type: [
+    {
+      order: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+      status: {
+        type: String,
+        enum: ["reserved", "deducted", "released", "restored"],
+        default: "reserved",
+        required: true,
+      },
+    },
+  ],
+  default: [],
+},
     lowStockThreshold: { type: Number, default: 10 },
     isAvailable: { type: Boolean, default: true, index: true },
     sortOrder:   { type: Number, default: 0 },    // display ordering

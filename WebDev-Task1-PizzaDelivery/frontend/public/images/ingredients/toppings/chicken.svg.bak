@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="180" cy="180" r="30" fill="#f5e6d3" stroke="#d4a373" stroke-width="2"/>
+  <circle cx="220" cy="200" r="30" fill="#f5e6d3" stroke="#d4a373" stroke-width="2"/>
+  <circle cx="200" cy="220" r="30" fill="#f5e6d3" stroke="#d4a373" stroke-width="2"/>
+  <text x="200" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Chicken</text>
+</svg>
+
+</write_to_file>

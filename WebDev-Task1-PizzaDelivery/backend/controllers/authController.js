@@ -64,13 +64,6 @@ const login = async (req, res) => {
   if (!user || !(await user.comparePassword(password)))
     return res.status(401).json({ message: "Invalid email or password" });
 
-  // Block unverified accounts
-  if (!user.isEmailVerified)
-    return res.status(403).json({
-      message: "Please verify your email address before logging in.",
-      code:    "EMAIL_NOT_VERIFIED",
-    });
-
   sendAuth(res, user);
 };
 
@@ -204,9 +197,90 @@ const resetPassword = async (req, res) => {
   sendAuth(res, user);
 };
 
+// ── POST /api/auth/admin/login ────────────────────────────────────────────────
+// Dedicated admin login — rejects non-admin and inactive accounts at the
+// controller level (middleware also enforces this, defence-in-depth).
+const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password");
+
+  // Generic message prevents user enumeration
+  if (!user || !(await user.comparePassword(password)))
+    return res.status(401).json({ message: "Invalid credentials" });
+
+  if (user.role !== "admin")
+    return res.status(403).json({ message: "This portal is for administrators only." });
+
+  if (user.isActive === false)
+    return res.status(403).json({ message: "This admin account has been deactivated. Contact another administrator." });
+
+  sendAuth(res, user);
+};
+
+// ── POST /api/auth/admin/register ────────────────────────────────────────────
+// Open admin self-registration — no invite code required.
+// ⚠️  Any visitor can obtain admin access. Restrict this endpoint in production
+//     (e.g. behind a VPN or by re-adding an env-flag guard).
+const registerAdmin = async (req, res) => {
+  const { name, email, password, confirmPassword } = req.body;
+
+  if (!name || !email || !password || !confirmPassword)
+    return res.status(400).json({ message: "All fields are required" });
+  if (password !== confirmPassword)
+    return res.status(400).json({ message: "Passwords do not match" });
+  if (password.length < 8)
+    return res.status(400).json({ message: "Password must be at least 8 characters" });
+
+  const normEmail = email.toLowerCase().trim();
+  const exists = await User.findOne({ email: normEmail });
+  if (exists) return res.status(409).json({ message: "Email already registered" });
+
+  const admin = await User.create({
+    name,
+    email:           normEmail,
+    password,
+    role:            "admin",
+    isActive:        true,
+    isEmailVerified: true,
+  });
+
+  // Auto-authenticate: return a JWT so the frontend can redirect straight to the dashboard
+  sendAuth(res, admin, 201);
+};
+
+// ── POST /api/auth/admin/accounts ─────────────────────────────────────────────
+// Create a new admin account. Restricted to existing admins only.
+// Never exposed as a public registration endpoint.
+const createAdminAccount = async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ message: "name, email and password are required" });
+  if (password.length < 8)
+    return res.status(400).json({ message: "Password must be at least 8 characters" });
+
+  const normEmail = email.toLowerCase().trim();
+  const exists = await User.findOne({ email: normEmail });
+  if (exists) return res.status(409).json({ message: "Email already registered" });
+
+  const admin = await User.create({
+    name,
+    email:           normEmail,
+    password,
+    role:            "admin",
+    isActive:        true,
+    isEmailVerified: true,   // admin accounts are pre-verified
+  });
+
+  res.status(201).json({ message: "Admin account created", admin: userPayload(admin) });
+};
+
 module.exports = {
   register,
   login,
+  adminLogin,
+  registerAdmin,
+  createAdminAccount,
   getMe,
   updateProfile,
   changePassword,

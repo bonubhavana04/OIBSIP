@@ -1,24 +1,33 @@
+
 const router = require("express").Router();
+
 const {
-  getAllPizzas, getPizzaById, createPizza, updatePizza, deletePizza,
-  getCategories, createCategory, updateCategory, deleteCategory,
+  getAllPizzas,
+  getPizzaById,
+  createPizza,
+  updatePizza,
+  deletePizza,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 } = require("../controllers/pizzaController");
-const { protect, adminOnly } = require("../middleware/auth");
 
-// All pizza routes require a valid JWT
-router.use(protect);
+const { protect, optionalProtect, adminOnly } = require("../middleware/auth");
 
-// Categories
+// Public menu browsing (optionalProtect lets admins see unavailable pizzas)
 router.get("/categories", getCategories);
-router.post("/categories", adminOnly, createCategory);
-router.put("/categories/:id", adminOnly, updateCategory);
-router.delete("/categories/:id", adminOnly, deleteCategory);
+router.get("/", optionalProtect, getAllPizzas);
+router.get("/:id", optionalProtect, getPizzaById);
 
-// Pizzas
-router.get("/", getAllPizzas);
-router.get("/:id", getPizzaById);
-router.post("/", adminOnly, createPizza);
-router.put("/:id", adminOnly, updatePizza);
-router.delete("/:id", adminOnly, deletePizza);
+// Admin-only category management
+router.post("/categories", protect, adminOnly, createCategory);
+router.put("/categories/:id", protect, adminOnly, updateCategory);
+router.delete("/categories/:id", protect, adminOnly, deleteCategory);
+
+// Admin-only pizza management
+router.post("/", protect, adminOnly, createPizza);
+router.put("/:id", protect, adminOnly, updatePizza);
+router.delete("/:id", protect, adminOnly, deletePizza);
 
 module.exports = router;

@@ -22,6 +22,7 @@ const protect = async (req, res, next) => {
   // password has select:false — it will NOT be included here
   const user = await User.findById(decoded.id);
   if (!user) return res.status(401).json({ message: "User no longer exists" });
+  if (user.isActive === false) return res.status(401).json({ message: "Account is inactive" });
 
   req.user = user;
   next();
@@ -38,6 +39,17 @@ const adminOnly = (req, res, next) => {
 };
 
 /**
+ * adminLoginOnly — used on POST /api/auth/admin/login.
+ * After protect resolves the token, this ensures the token belongs to an admin.
+ * Prevents customers from using the admin login endpoint to obtain an "admin session".
+ */
+const adminLoginOnly = (req, res, next) => {
+  if (req.user?.role !== "admin")
+    return res.status(403).json({ message: "This portal is for administrators only." });
+  next();
+};
+
+/**
  * requireVerified — blocks unverified users from placing orders etc.
  * Must come after protect.
  */
@@ -50,4 +62,22 @@ const requireVerified = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, adminOnly, requireVerified };
+/**
+ * optionalProtect — attaches req.user if a valid Bearer token is present,
+ * but does NOT block the request if there is no token or it is invalid.
+ * Use on public routes that behave differently for admins.
+ */
+const optionalProtect = async (req, _res, next) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return next();
+  try {
+    const decoded = jwt.verify(header.split(" ")[1], process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (user) req.user = user;
+  } catch {
+    // invalid token — treat as unauthenticated
+  }
+  next();
+};
+
+module.exports = { protect, optionalProtect, adminOnly, adminLoginOnly, requireVerified };

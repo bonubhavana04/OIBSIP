@@ -42,6 +42,5 @@ const inventoryLogSchema = new mongoose.Schema(
 );
 
 inventoryLogSchema.index({ ingredient: 1, createdAt: -1 });
-inventoryLogSchema.index({ order: 1 });
 
 module.exports = mongoose.model("InventoryLog", inventoryLogSchema);

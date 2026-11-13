@@ -1,0 +1,721 @@
+[
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d0"
+    },
+    "name": "Margherita",
+    "description": "San Marzano tomato, fresh mozzarella, basil",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cc"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "19900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "29900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "39900"
+        }
+      }
+    ],
+    "toppings": [
+      "Mozzarella",
+      "Basil",
+      "Olive Oil"
+    ],
+    "isVeg": true,
+    "isAvailable": true,
+    "isFeatured": true,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d1"
+    },
+    "name": "Pepperoni Classic",
+    "description": "Loaded with spicy pepperoni and mozzarella",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cc"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "24900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "34900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "44900"
+        }
+      }
+    ],
+    "toppings": [
+      "Pepperoni",
+      "Mozzarella",
+      "Tomato Sauce"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": true,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d2"
+    },
+    "name": "BBQ Chicken",
+    "description": "Smoky BBQ sauce, grilled chicken, red onions",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cc"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "26900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "36900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "46900"
+        }
+      }
+    ],
+    "toppings": [
+      "Grilled Chicken",
+      "BBQ Sauce",
+      "Red Onion",
+      "Mozzarella"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666834"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d3"
+    },
+    "name": "Garden Fresh",
+    "description": "Bell peppers, mushrooms, olives, onions, tomatoes",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cd"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "21900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "31900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "41900"
+        }
+      }
+    ],
+    "toppings": [
+      "Bell Peppers",
+      "Mushrooms",
+      "Olives",
+      "Onions",
+      "Tomatoes"
+    ],
+    "isVeg": true,
+    "isAvailable": true,
+    "isFeatured": true,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d4"
+    },
+    "name": "Paneer Tikka",
+    "description": "Tandoori paneer, capsicum, onion, mint chutney base",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cd"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "23900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "33900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "43900"
+        }
+      }
+    ],
+    "toppings": [
+      "Paneer",
+      "Capsicum",
+      "Onion",
+      "Mint Chutney"
+    ],
+    "isVeg": true,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d5"
+    },
+    "name": "Mushroom Melt",
+    "description": "Three-mushroom blend, truffle oil, parmesan",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cd"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "22900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "32900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "42900"
+        }
+      }
+    ],
+    "toppings": [
+      "Button Mushrooms",
+      "Shiitake",
+      "Portobello",
+      "Parmesan"
+    ],
+    "isVeg": true,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d6"
+    },
+    "name": "Chicken Supreme",
+    "description": "Grilled chicken, jalapeños, corn, mozzarella",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6ce"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "25900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "35900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "45900"
+        }
+      }
+    ],
+    "toppings": [
+      "Grilled Chicken",
+      "Jalapeños",
+      "Corn",
+      "Mozzarella"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": true,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d7"
+    },
+    "name": "Meat Feast",
+    "description": "Pepperoni, chicken sausage, bacon, ham",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6ce"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "29900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "39900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "49900"
+        }
+      }
+    ],
+    "toppings": [
+      "Pepperoni",
+      "Chicken Sausage",
+      "Bacon",
+      "Ham"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d8"
+    },
+    "name": "Spicy Keema",
+    "description": "Minced chicken, green chillies, coriander, onion",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6ce"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "26900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "36900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "46900"
+        }
+      }
+    ],
+    "toppings": [
+      "Minced Chicken",
+      "Green Chillies",
+      "Coriander",
+      "Onion"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6d9"
+    },
+    "name": "Truffle Royale",
+    "description": "Black truffle paste, wild mushrooms, arugula, parmesan",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cf"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "34900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "49900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "64900"
+        }
+      }
+    ],
+    "toppings": [
+      "Black Truffle",
+      "Wild Mushrooms",
+      "Arugula",
+      "Parmesan"
+    ],
+    "isVeg": true,
+    "isAvailable": true,
+    "isFeatured": true,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6da"
+    },
+    "name": "Prawn Aglio",
+    "description": "Garlic butter prawns, cherry tomatoes, chilli flakes",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cf"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "37900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "52900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "67900"
+        }
+      }
+    ],
+    "toppings": [
+      "Prawns",
+      "Garlic Butter",
+      "Cherry Tomatoes",
+      "Chilli Flakes"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6db"
+    },
+    "name": "Smoked Salmon",
+    "description": "Cream cheese base, smoked salmon, capers, dill",
+    "category": {
+      "$oid": "6add284ab48fd5269ce6e6cf"
+    },
+    "sizes": [
+      {
+        "label": "Small",
+        "priceP": {
+          "$numberInt": "39900"
+        }
+      },
+      {
+        "label": "Medium",
+        "priceP": {
+          "$numberInt": "54900"
+        }
+      },
+      {
+        "label": "Large",
+        "priceP": {
+          "$numberInt": "69900"
+        }
+      }
+    ],
+    "toppings": [
+      "Smoked Salmon",
+      "Cream Cheese",
+      "Capers",
+      "Dill"
+    ],
+    "isVeg": false,
+    "isAvailable": true,
+    "isFeatured": false,
+    "ratings": {
+      "average": {
+        "$numberInt": "0"
+      },
+      "count": {
+        "$numberInt": "0"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666835"
+      }
+    }
+  }
+]

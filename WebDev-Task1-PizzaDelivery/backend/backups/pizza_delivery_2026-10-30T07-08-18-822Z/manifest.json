@@ -1,0 +1,56 @@
+{
+  "database": "pizza_delivery",
+  "createdAt": "2026-10-30T07:08:18.852Z",
+  "collections": [
+    {
+      "collection": "orders",
+      "documentCount": 5,
+      "file": "orders.json"
+    },
+    {
+      "collection": "t3",
+      "documentCount": 0,
+      "file": "t3.json"
+    },
+    {
+      "collection": "categories",
+      "documentCount": 4,
+      "file": "categories.json"
+    },
+    {
+      "collection": "pizzaingredients",
+      "documentCount": 0,
+      "file": "pizzaingredients.json"
+    },
+    {
+      "collection": "pizzas",
+      "documentCount": 12,
+      "file": "pizzas.json"
+    },
+    {
+      "collection": "t2",
+      "documentCount": 0,
+      "file": "t2.json"
+    },
+    {
+      "collection": "inventorylogs",
+      "documentCount": 0,
+      "file": "inventorylogs.json"
+    },
+    {
+      "collection": "usertests",
+      "documentCount": 0,
+      "file": "usertests.json"
+    },
+    {
+      "collection": "inventories",
+      "documentCount": 25,
+      "file": "inventories.json"
+    },
+    {
+      "collection": "users",
+      "documentCount": 3,
+      "file": "users.json"
+    }
+  ]
+}

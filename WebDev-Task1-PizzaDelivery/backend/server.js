@@ -11,11 +11,30 @@ const app    = express();
 const server = http.createServer(app);
 
 // ── Socket.IO ─────────────────────────────────────────────────────────────────
+const jwt   = require("jsonwebtoken");
+const User  = require("./models/User");
+const Order = require("./models/Order");
+
 const io = new Server(server, {
   cors: {
     origin:  process.env.CLIENT_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
+});
+
+// Authenticate every socket connection via JWT in handshake auth
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error("Authentication required"));
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("_id role");
+    if (!user) return next(new Error("User not found"));
+    socket.user = user;
+    next();
+  } catch {
+    next(new Error("Invalid token"));
+  }
 });
 
 app.use((req, _res, next) => { req.io = io; next(); });
@@ -38,32 +57,36 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 // ── Routes ────────────────────────────────────────────────────────────────────
-const authRoutes      = require("./routes/authRoutes");
-const pizzaRoutes     = require("./routes/pizzaRoutes");
-const orderRoutes     = require("./routes/orderRoutes");
-const paymentRoutes   = require("./routes/paymentRoutes");
-const inventoryRoutes = require("./routes/inventoryRoutes");
+const authRoutes       = require("./routes/authRoutes");
+const pizzaRoutes      = require("./routes/pizzaRoutes");
+const orderRoutes      = require("./routes/orderRoutes");
+const paymentRoutes    = require("./routes/paymentRoutes");
+const inventoryRoutes  = require("./routes/inventoryRoutes");
+const storefrontRoutes = require("./routes/storefrontRoutes");
 
-// ── Webhook route — mounted BEFORE express.json() so the raw body is intact ──
-// express.raw() is applied per-route inside paymentRoutes for /webhook only.
-// All other payment routes are unaffected.
-app.use("/api/payments",    paymentRoutes);
+// Payment routes first: webhook needs the untouched raw request body.
+app.use("/api/payments", paymentRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 
-// ── JSON body parser — applied after webhook routes ──────────────────────────
+// Parse JSON request bodies for the remaining API routes.
 app.use(express.json({ limit: "10kb" }));
+
+// Storefront routes need a larger limit for base64 banner images (up to ~2.7 MB encoded)
+const storefrontJsonParser = express.json({ limit: "4mb" });
 
 // Versioned prefix — /api/v1/...
 app.use("/api/v1/auth",      authRoutes);
 app.use("/api/v1/pizzas",    pizzaRoutes);
 app.use("/api/v1/orders",    orderRoutes);
 app.use("/api/v1/inventory", inventoryRoutes);
+app.use("/api/v1/storefront", storefrontJsonParser, storefrontRoutes);
 
 // Backward-compatible alias — /api/... (keeps existing frontend working)
-app.use("/api/auth",      authRoutes);
-app.use("/api/pizzas",    pizzaRoutes);
-app.use("/api/orders",    orderRoutes);
-app.use("/api/inventory", inventoryRoutes);
+app.use("/api/auth",       authRoutes);
+app.use("/api/pizzas",     pizzaRoutes);
+app.use("/api/orders",     orderRoutes);
+app.use("/api/inventory",  inventoryRoutes);
+app.use("/api/storefront", storefrontJsonParser, storefrontRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_req, res) =>
@@ -88,11 +111,21 @@ app.use((err, _req, res, _next) => {
 
 // ── Socket.IO events ──────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.id}`);
+  // join_order: validate the requesting user owns the order (or is admin)
+  socket.on("join_order", async (orderId) => {
+    try {
+      const order = await Order.findById(orderId).select("user").lean();
+      if (!order) return;
+      const isOwner = order.user.toString() === socket.user._id.toString();
+      const isAdmin = socket.user.role === "admin";
+      if (!isOwner && !isAdmin) return; // silently reject — don't leak existence
+      socket.join(`order_${orderId}`);
+    } catch {
+      // ignore invalid ObjectIds
+    }
+  });
 
-  socket.on("join_order", (orderId) => socket.join(`order_${orderId}`));
-
-  socket.on("disconnect", () => console.log(`Socket disconnected: ${socket.id}`));
+  socket.on("disconnect", () => {});
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

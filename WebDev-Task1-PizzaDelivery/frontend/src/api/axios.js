@@ -12,18 +12,28 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Endpoints where a 401 should NOT trigger an automatic session-clear redirect.
+// The calling code (e.g. Checkout.jsx) handles these errors directly.
+const NO_AUTO_REDIRECT = ["/orders", "/payments/"];
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Auto-redirect on 401 only for non-auth endpoints and only when not already on /login
+    const url = err.config?.url || "";
+    const isAuthEndpoint    = url.includes("/auth/");
+    const isCheckoutEndpoint = NO_AUTO_REDIRECT.some((p) => url.includes(p));
+
     if (
       err.response?.status === 401 &&
-      !err.config?.url?.includes("/auth/") &&
+      !isAuthEndpoint &&
+      !isCheckoutEndpoint &&
       window.location.pathname !== "/login"
     ) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+      // Dispatch a custom event so AuthContext / React Router handle navigation
+      // without a hard page reload, preserving the SPA state.
+      window.dispatchEvent(new CustomEvent("auth:logout"));
     }
     return Promise.reject(err);
   }

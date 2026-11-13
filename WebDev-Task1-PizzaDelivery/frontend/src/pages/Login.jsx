@@ -8,7 +8,8 @@ export default function Login() {
   const { login } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
-  const from      = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname;
+  const redirectTo = !from || from === "/" ? "/home" : from;
 
   const [form, setForm]           = useState({ email: "", password: "" });
   const [loading, setLoading]     = useState(false);
@@ -24,7 +25,7 @@ export default function Login() {
     try {
       await login(form.email, form.password);
       toast.success("Welcome back!");
-      navigate(from, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       const data = err.response?.data;
       if (data?.code === "EMAIL_NOT_VERIFIED") {

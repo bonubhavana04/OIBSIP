@@ -10,11 +10,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const close = () => setOpen(false);
-  const handleLogout = () => { logout(); navigate("/login"); };
+  const handleLogout = () => { logout(); navigate("/"); };
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand" onClick={close}>
+      <Link to="/home" className="navbar-brand" onClick={close}>
         Cravello<span className="navbar-brand-dot" />
       </Link>
 
@@ -42,7 +42,8 @@ export default function Navbar() {
           </>
         ) : (
           <>
-            <NavLink to="/login" onClick={close}>Login</NavLink>
+            <NavLink to="/login" onClick={close}>Sign In</NavLink>
+            <NavLink to="/admin-login" onClick={close} className="btn-admin-sm">Admin Login</NavLink>
             <Link to="/register" className="btn-primary-sm" onClick={close}>Sign Up</Link>
           </>
         )}
