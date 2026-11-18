@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="200" cy="200" r="90" fill="#e8d9c8" stroke="#d4a373" stroke-width="3"/>
+  <circle cx="200" cy="200" r="70" fill="#f5ede0" stroke="#c0392b" stroke-width="1"/>
+  <text x="200" y="210" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Onion</text>
+</svg>

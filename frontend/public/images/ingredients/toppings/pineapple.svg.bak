@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <path d="M 200 140 Q 160 180 200 220 Q 240 180 200 140" fill="#f1c40f" stroke="#b7950b" stroke-width="2"/>
+  <path d="M 180 160 Q 140 200 180 240 Q 220 200 180 160" fill="#f7dc6f" stroke="#b7950b" stroke-width="2"/>
+  <path d="M 220 160 Q 260 200 220 240 Q 180 200 220 160" fill="#f7dc6f" stroke="#b7950b" stroke-width="2"/>
+  <rect x="190" y="240" width="20" height="50" fill="#2d6a4f"/>
+  <text x="200" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Pineapple</text>
+</svg>
+
+</write_to_file>

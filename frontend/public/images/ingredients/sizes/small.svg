@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="200" cy="200" r="90" fill="#f5ede0" stroke="#e8d9c8" stroke-width="4"/>
+  <circle cx="200" cy="200" r="70" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+  <text x="200" y="210" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle">Small</text>
+  <text x="200" y="230" font-family="Arial, sans-serif" font-size="12" fill="#6b6b6b" text-anchor="middle">6 inch</text>
+</svg>

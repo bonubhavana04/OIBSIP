@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="200" cy="200" r="85" fill="#c0392b" stroke="#a93226" stroke-width="3"/>
+  <circle cx="200" cy="200" r="65" fill="#e74c3c" opacity="0.8"/>
+  <text x="200" y="210" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">Red Bell Pepper</text>
+</svg>

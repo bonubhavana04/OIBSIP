@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="200" cy="200" r="70" fill="#e74c3c" stroke="#c0392b" stroke-width="3"/>
+  <circle cx="200" cy="200" r="50" fill="#ec7063" opacity="0.7"/>
+  <path d="M 200 130 Q 190 140 200 150 Q 210 140 200 130" fill="#2d6a4f"/>
+  <text x="200" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Tomato</text>
+</svg>
+
+</write_to_file>

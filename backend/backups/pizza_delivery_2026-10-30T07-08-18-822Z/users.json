@@ -1,0 +1,76 @@
+[
+  {
+    "_id": {
+      "$oid": "6add0a0829bbc435d57c3f54"
+    },
+    "name": "Admin",
+    "email": "admin@pizza.com",
+    "password": "$2b$12$DZEVXK.M0h7xGEG7F46KrOxI5QzgVt2NYIJMW3BLxupq/zdEcYFPW",
+    "role": "admin",
+    "addresses": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792870920691"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792914986264"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "isEmailVerified": true
+  },
+  {
+    "_id": {
+      "$oid": "6add0b38b06570b907b88710"
+    },
+    "name": "bhavana",
+    "email": "bonubhavana04@gmail.com",
+    "password": "$2b$12$6vQl59rsNmNq2N/KKjOXM.9696M7FXZRdPa300FxzAhRpxCwq680.",
+    "phone": "",
+    "role": "user",
+    "addresses": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792871225014"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793285603594"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "isEmailVerified": true
+  },
+  {
+    "_id": {
+      "$oid": "6ae362f0e1b83e9d26a56197"
+    },
+    "name": "pranu",
+    "email": "24r21a05f2@mlrit.ac.in",
+    "password": "$2b$12$GUMcNywnhwuDm.Rvg4FiYeJmBb4GA9UxDBufftN7MnQc9Lr9fgYw6",
+    "phone": "",
+    "role": "user",
+    "isEmailVerified": true,
+    "addresses": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793286896024"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793286981092"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]
