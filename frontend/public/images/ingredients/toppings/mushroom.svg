@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <ellipse cx="200" cy="200" rx="55" ry="75" fill="#d4a373" stroke="#a67c52" stroke-width="3"/>
+  <ellipse cx="200" cy="150" rx="75" ry="45" fill="#f5ede0" stroke="#a67c52" stroke-width="3"/>
+  <circle cx="185" cy="145" r="8" fill="#d4a373"/>
+  <circle cx="215" cy="155" r="8" fill="#d4a373"/>
+  <text x="200" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Mushroom</text>
+</svg>

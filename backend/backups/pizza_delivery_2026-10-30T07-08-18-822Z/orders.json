@@ -1,0 +1,540 @@
+[
+  {
+    "_id": {
+      "$oid": "6add0b62b06570b907b88711"
+    },
+    "user": {
+      "$oid": "6add0b38b06570b907b88710"
+    },
+    "items": [
+      {
+        "pizza": {
+          "$oid": "6add065790e4376f590fcc1d"
+        },
+        "name": "Pepperoni Classic",
+        "size": "Medium",
+        "price": {
+          "$numberInt": "349"
+        },
+        "quantity": {
+          "$numberInt": "1"
+        },
+        "toppings": []
+      }
+    ],
+    "deliveryAddress": {
+      "street": "abc",
+      "city": "hyd",
+      "state": "tel",
+      "pincode": "500055"
+    },
+    "subtotal": {
+      "$numberInt": "349"
+    },
+    "deliveryFee": {
+      "$numberInt": "40"
+    },
+    "total": {
+      "$numberInt": "389"
+    },
+    "status": "confirmed",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1792871266824"
+          }
+        }
+      },
+      {
+        "status": "confirmed",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1792871266974"
+          }
+        }
+      }
+    ],
+    "payment": {
+      "method": "cod",
+      "status": "pending"
+    },
+    "estimatedDelivery": {
+      "$date": {
+        "$numberLong": "1792873966813"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792871266830"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792871266971"
+      }
+    },
+    "__v": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae3700fef71e2ac270514ad"
+    },
+    "user": {
+      "$oid": "6ae362f0e1b83e9d26a56197"
+    },
+    "items": [
+      {
+        "itemType": "custom",
+        "name": "Custom Pizza",
+        "size": "Medium",
+        "priceP": {
+          "$numberInt": "29900"
+        },
+        "quantity": {
+          "$numberInt": "1"
+        },
+        "toppings": [
+          "Bell Peppers",
+          "Mushrooms",
+          "Corn"
+        ],
+        "customPizza": {
+          "base": {
+            "$oid": "6add284b2e3aff2a41cf09b3"
+          },
+          "sauce": {
+            "$oid": "6add284b2e3aff2a41cf09b9"
+          },
+          "cheese": {
+            "$oid": "6add284b2e3aff2a41cf09bd"
+          },
+          "veggies": [
+            {
+              "$oid": "6add284b2e3aff2a41cf09c1"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c2"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c6"
+            }
+          ],
+          "baseName": "Thin & Crispy",
+          "sauceName": "White Garlic",
+          "cheeseName": "Cheddar",
+          "veggieNames": [
+            "Bell Peppers",
+            "Mushrooms",
+            "Corn"
+          ]
+        }
+      }
+    ],
+    "deliveryAddress": {
+      "street": "55",
+      "city": "hyd",
+      "state": "hyd",
+      "pincode": "500053"
+    },
+    "subtotalP": {
+      "$numberInt": "29900"
+    },
+    "deliveryFeeP": {
+      "$numberInt": "4000"
+    },
+    "totalP": {
+      "$numberInt": "33900"
+    },
+    "status": "pending",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793290255704"
+          }
+        }
+      }
+    ],
+    "payment": {
+      "method": "cod",
+      "status": "pending"
+    },
+    "estimatedDelivery": {
+      "$date": {
+        "$numberLong": "1793292955690"
+      }
+    },
+    "notes": "",
+    "stockReserved": true,
+    "stockDeducted": false,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793290255712"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793290255741"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae372524daa5cae5fff0d0d"
+    },
+    "user": {
+      "$oid": "6ae362f0e1b83e9d26a56197"
+    },
+    "items": [
+      {
+        "itemType": "custom",
+        "name": "Custom Pizza",
+        "size": "Medium",
+        "priceP": {
+          "$numberInt": "29900"
+        },
+        "quantity": {
+          "$numberInt": "1"
+        },
+        "toppings": [
+          "Bell Peppers",
+          "Mushrooms",
+          "Corn"
+        ],
+        "customPizza": {
+          "base": {
+            "$oid": "6add284b2e3aff2a41cf09b3"
+          },
+          "sauce": {
+            "$oid": "6add284b2e3aff2a41cf09b9"
+          },
+          "cheese": {
+            "$oid": "6add284b2e3aff2a41cf09bd"
+          },
+          "veggies": [
+            {
+              "$oid": "6add284b2e3aff2a41cf09c1"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c2"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c6"
+            }
+          ],
+          "baseName": "Thin & Crispy",
+          "sauceName": "White Garlic",
+          "cheeseName": "Cheddar",
+          "veggieNames": [
+            "Bell Peppers",
+            "Mushrooms",
+            "Corn"
+          ]
+        }
+      }
+    ],
+    "deliveryAddress": {
+      "street": "25",
+      "city": "hyd",
+      "state": "tel",
+      "pincode": "500005"
+    },
+    "subtotalP": {
+      "$numberInt": "29900"
+    },
+    "deliveryFeeP": {
+      "$numberInt": "4000"
+    },
+    "totalP": {
+      "$numberInt": "33900"
+    },
+    "status": "confirmed",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793290834759"
+          }
+        }
+      },
+      {
+        "status": "confirmed",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793290835002"
+          }
+        }
+      }
+    ],
+    "payment": {
+      "method": "cod",
+      "status": "pending"
+    },
+    "estimatedDelivery": {
+      "$date": {
+        "$numberLong": "1793293534731"
+      }
+    },
+    "notes": "",
+    "stockReserved": true,
+    "stockDeducted": true,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793290834796"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793290835011"
+      }
+    },
+    "__v": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae376893e492e19b0da7720"
+    },
+    "user": {
+      "$oid": "6ae362f0e1b83e9d26a56197"
+    },
+    "items": [
+      {
+        "itemType": "custom",
+        "name": "Custom Pizza",
+        "size": "Medium",
+        "priceP": {
+          "$numberInt": "38400"
+        },
+        "quantity": {
+          "$numberInt": "1"
+        },
+        "toppings": [
+          "Bell Peppers",
+          "Black Olives",
+          "Red Onions",
+          "Sun-dried Tomatoes"
+        ],
+        "customPizza": {
+          "base": {
+            "$oid": "6add284b2e3aff2a41cf09b4"
+          },
+          "sauce": {
+            "$oid": "6add284b2e3aff2a41cf09ba"
+          },
+          "cheese": {
+            "$oid": "6add284b2e3aff2a41cf09bf"
+          },
+          "veggies": [
+            {
+              "$oid": "6add284b2e3aff2a41cf09c1"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c3"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c4"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c8"
+            }
+          ],
+          "baseName": "Thick Pan",
+          "sauceName": "Pesto",
+          "cheeseName": "Vegan Cheese",
+          "veggieNames": [
+            "Bell Peppers",
+            "Black Olives",
+            "Red Onions",
+            "Sun-dried Tomatoes"
+          ]
+        }
+      }
+    ],
+    "deliveryAddress": {
+      "street": "55",
+      "city": "jc",
+      "state": "jnc",
+      "pincode": "500050"
+    },
+    "subtotalP": {
+      "$numberInt": "38400"
+    },
+    "deliveryFeeP": {
+      "$numberInt": "4000"
+    },
+    "totalP": {
+      "$numberInt": "42400"
+    },
+    "status": "confirmed",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793291913261"
+          }
+        }
+      },
+      {
+        "status": "confirmed",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793291913468"
+          }
+        }
+      }
+    ],
+    "payment": {
+      "method": "cod",
+      "status": "pending"
+    },
+    "estimatedDelivery": {
+      "$date": {
+        "$numberLong": "1793294613243"
+      }
+    },
+    "notes": "",
+    "stockReserved": true,
+    "stockDeducted": true,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793291913278"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793291913476"
+      }
+    },
+    "__v": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae382add59a5bf95dd03254"
+    },
+    "user": {
+      "$oid": "6add0b38b06570b907b88710"
+    },
+    "items": [
+      {
+        "itemType": "custom",
+        "name": "Custom Pizza",
+        "size": "Medium",
+        "priceP": {
+          "$numberInt": "29900"
+        },
+        "quantity": {
+          "$numberInt": "1"
+        },
+        "toppings": [
+          "Bell Peppers",
+          "Jalapeños",
+          "Spinach"
+        ],
+        "customPizza": {
+          "base": {
+            "$oid": "6add284b2e3aff2a41cf09b2"
+          },
+          "sauce": {
+            "$oid": "6add284b2e3aff2a41cf09b8"
+          },
+          "cheese": {
+            "$oid": "6add284b2e3aff2a41cf09bf"
+          },
+          "veggies": [
+            {
+              "$oid": "6add284b2e3aff2a41cf09c1"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c5"
+            },
+            {
+              "$oid": "6add284b2e3aff2a41cf09c7"
+            }
+          ],
+          "baseName": "Classic Hand-Tossed",
+          "sauceName": "BBQ Smoky",
+          "cheeseName": "Vegan Cheese",
+          "veggieNames": [
+            "Bell Peppers",
+            "Jalapeños",
+            "Spinach"
+          ]
+        }
+      }
+    ],
+    "deliveryAddress": {
+      "street": "tyu",
+      "city": "hyg",
+      "state": "hyf",
+      "pincode": "500055"
+    },
+    "subtotalP": {
+      "$numberInt": "29900"
+    },
+    "deliveryFeeP": {
+      "$numberInt": "4000"
+    },
+    "totalP": {
+      "$numberInt": "33900"
+    },
+    "status": "confirmed",
+    "statusHistory": [
+      {
+        "status": "pending",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793295021843"
+          }
+        }
+      },
+      {
+        "status": "confirmed",
+        "changedAt": {
+          "$date": {
+            "$numberLong": "1793295021966"
+          }
+        }
+      }
+    ],
+    "payment": {
+      "method": "cod",
+      "status": "pending"
+    },
+    "estimatedDelivery": {
+      "$date": {
+        "$numberLong": "1793297721830"
+      }
+    },
+    "notes": "",
+    "stockReserved": true,
+    "stockDeducted": true,
+    "orderConfirmationEmailSent": true,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793295021854"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793295021969"
+      }
+    },
+    "__v": {
+      "$numberInt": "1"
+    }
+  }
+]

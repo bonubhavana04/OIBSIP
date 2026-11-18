@@ -1,0 +1,90 @@
+[
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6cc"
+    },
+    "name": "Classic",
+    "description": "Timeless favourites everyone loves",
+    "emoji": "🍕",
+    "isActive": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666815"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666815"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6cd"
+    },
+    "name": "Veggie",
+    "description": "Fresh garden goodness",
+    "emoji": "🥦",
+    "isActive": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6ce"
+    },
+    "name": "Non-Veg",
+    "description": "Loaded with premium meats",
+    "emoji": "🍗",
+    "isActive": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284ab48fd5269ce6e6cf"
+    },
+    "name": "Premium",
+    "description": "Gourmet toppings, elevated flavours",
+    "emoji": "👨‍🍳",
+    "isActive": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878666817"
+      }
+    }
+  }
+]

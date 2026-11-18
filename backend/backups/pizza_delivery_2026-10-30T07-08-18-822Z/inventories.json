@@ -1,0 +1,877 @@
+[
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b2"
+    },
+    "category": "base",
+    "name": "Classic Hand-Tossed",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667169"
+      }
+    },
+    "description": "Light & airy with a chewy crust",
+    "emoji": "🫓",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "0"
+    },
+    "sortOrder": {
+      "$numberInt": "1"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701278"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b3"
+    },
+    "category": "base",
+    "name": "Thin & Crispy",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667190"
+      }
+    },
+    "description": "Ultra-thin Roman-style base",
+    "emoji": "🥙",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "0"
+    },
+    "sortOrder": {
+      "$numberInt": "2"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701291"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b4"
+    },
+    "category": "base",
+    "name": "Thick Pan",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667192"
+      }
+    },
+    "description": "Deep-dish, pillowy soft",
+    "emoji": "🍞",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "3000"
+    },
+    "sortOrder": {
+      "$numberInt": "3"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701293"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b5"
+    },
+    "category": "base",
+    "name": "Whole Wheat",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667194"
+      }
+    },
+    "description": "Nutty, wholesome & healthy",
+    "emoji": "🌾",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "4"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701295"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b6"
+    },
+    "category": "base",
+    "name": "Gluten-Free",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667196"
+      }
+    },
+    "description": "Rice flour base, crisp finish",
+    "emoji": "🌿",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "5000"
+    },
+    "sortOrder": {
+      "$numberInt": "5"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701297"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b7"
+    },
+    "category": "sauce",
+    "name": "Classic Tomato",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667198"
+      }
+    },
+    "description": "San Marzano tomatoes, garlic, basil",
+    "emoji": "🍅",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "0"
+    },
+    "sortOrder": {
+      "$numberInt": "1"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701299"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b8"
+    },
+    "category": "sauce",
+    "name": "BBQ Smoky",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667199"
+      }
+    },
+    "description": "Rich, tangy hickory BBQ",
+    "emoji": "🔥",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "0"
+    },
+    "sortOrder": {
+      "$numberInt": "2"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701300"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09b9"
+    },
+    "category": "sauce",
+    "name": "White Garlic",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667201"
+      }
+    },
+    "description": "Creamy roasted garlic alfredo",
+    "emoji": "🧄",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "3"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701302"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09ba"
+    },
+    "category": "sauce",
+    "name": "Pesto",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667202"
+      }
+    },
+    "description": "Fresh basil & pine nut pesto",
+    "emoji": "🌿",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "3000"
+    },
+    "sortOrder": {
+      "$numberInt": "4"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701303"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09bb"
+    },
+    "category": "sauce",
+    "name": "Spicy Arrabbiata",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667204"
+      }
+    },
+    "description": "Fiery chilli tomato sauce",
+    "emoji": "🌶️",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "1000"
+    },
+    "sortOrder": {
+      "$numberInt": "5"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701305"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09bc"
+    },
+    "category": "cheese",
+    "name": "Mozzarella",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667206"
+      }
+    },
+    "description": "Classic stretchy melt",
+    "emoji": "🧀",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "0"
+    },
+    "sortOrder": {
+      "$numberInt": "1"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701306"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09bd"
+    },
+    "category": "cheese",
+    "name": "Cheddar",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667208"
+      }
+    },
+    "description": "Sharp, bold flavour",
+    "emoji": "🧀",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "2"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701307"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09be"
+    },
+    "category": "cheese",
+    "name": "Parmesan",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667210"
+      }
+    },
+    "description": "Aged, nutty & salty",
+    "emoji": "🧀",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "3000"
+    },
+    "sortOrder": {
+      "$numberInt": "3"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701308"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09bf"
+    },
+    "category": "cheese",
+    "name": "Vegan Cheese",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667212"
+      }
+    },
+    "description": "Cashew-based, dairy-free",
+    "emoji": "🌱",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "4000"
+    },
+    "sortOrder": {
+      "$numberInt": "4"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701309"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c0"
+    },
+    "category": "cheese",
+    "name": "Four Cheese Blend",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667216"
+      }
+    },
+    "description": "Mozz + Ched + Parm + Gouda",
+    "emoji": "🧀",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "5000"
+    },
+    "sortOrder": {
+      "$numberInt": "5"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701310"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c1"
+    },
+    "category": "veggie",
+    "name": "Bell Peppers",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667217"
+      }
+    },
+    "description": "",
+    "emoji": "🫑",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "1"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701311"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c2"
+    },
+    "category": "veggie",
+    "name": "Mushrooms",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667219"
+      }
+    },
+    "description": "",
+    "emoji": "🍄",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2500"
+    },
+    "sortOrder": {
+      "$numberInt": "2"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701312"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c3"
+    },
+    "category": "veggie",
+    "name": "Black Olives",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667221"
+      }
+    },
+    "description": "",
+    "emoji": "🫒",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "3"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701313"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c4"
+    },
+    "category": "veggie",
+    "name": "Red Onions",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667223"
+      }
+    },
+    "description": "",
+    "emoji": "🧅",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "1500"
+    },
+    "sortOrder": {
+      "$numberInt": "4"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701314"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c5"
+    },
+    "category": "veggie",
+    "name": "Jalapeños",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667225"
+      }
+    },
+    "description": "",
+    "emoji": "🌶️",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "5"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701316"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c6"
+    },
+    "category": "veggie",
+    "name": "Corn",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667226"
+      }
+    },
+    "description": "",
+    "emoji": "🌽",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "1500"
+    },
+    "sortOrder": {
+      "$numberInt": "6"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701317"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c7"
+    },
+    "category": "veggie",
+    "name": "Spinach",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667228"
+      }
+    },
+    "description": "",
+    "emoji": "🥬",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2000"
+    },
+    "sortOrder": {
+      "$numberInt": "7"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701318"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c8"
+    },
+    "category": "veggie",
+    "name": "Sun-dried Tomatoes",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667230"
+      }
+    },
+    "description": "",
+    "emoji": "🍅",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "3000"
+    },
+    "sortOrder": {
+      "$numberInt": "8"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701319"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09c9"
+    },
+    "category": "veggie",
+    "name": "Artichoke Hearts",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667231"
+      }
+    },
+    "description": "",
+    "emoji": "🌿",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "3500"
+    },
+    "sortOrder": {
+      "$numberInt": "9"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701321"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add284b2e3aff2a41cf09ca"
+    },
+    "category": "veggie",
+    "name": "Caramelised Onions",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792878667233"
+      }
+    },
+    "description": "",
+    "emoji": "🧅",
+    "isAvailable": true,
+    "lowStockThreshold": {
+      "$numberInt": "10"
+    },
+    "priceP": {
+      "$numberInt": "2500"
+    },
+    "sortOrder": {
+      "$numberInt": "10"
+    },
+    "stock": {
+      "$numberInt": "-1"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1792878701323"
+      }
+    }
+  }
+]

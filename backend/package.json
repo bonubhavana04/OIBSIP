@@ -1,0 +1,48 @@
+{
+  "name": "pizza-delivery-backend",
+  "version": "1.0.0",
+  "description": "Pizza Delivery REST API — Node.js, Express, MongoDB",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed:admin": "node seedAdmin.js",
+    "seed:menu": "node seedMenu.js",
+    "seed:inventory": "node seedInventory.js",
+    "seed:all": "node seedAdmin.js && node seedMenu.js && node seedInventory.js",
+    "reset:admin-password": "node resetAdminPassword.js",
+    "test": "jest --runInBand --forceExit",
+    "test:watch": "jest --runInBand --watch",
+    "test:low-stock": "node -e \"require('dotenv').config(); const {sendLowStockAlert}=require('./utils/mailer'); sendLowStockAlert([{name:'Test Dough',category:'base',stock:3,lowStockThreshold:10}]).then(i=>console.log('SMTP accepted:',i?.accepted)).catch(e=>console.error('SMTP error:',e.message))\"",
+    "test:razorpay-keys": "node -e \"require('dotenv').config(); const k=process.env.RAZORPAY_KEY_ID; const s=process.env.RAZORPAY_KEY_SECRET; const w=process.env.RAZORPAY_WEBHOOK_SECRET; if(!k||!s||!w){console.error('❌ Missing Razorpay env vars');process.exit(1)} if(!k.startsWith('rzp_test_')){console.error('❌ RAZORPAY_KEY_ID must start with rzp_test_ — never use live keys');process.exit(1)} const R=require('razorpay'); const rzp=new R({key_id:k,key_secret:s}); rzp.orders.create({amount:100,currency:'INR',receipt:'test'}).then(o=>console.log('✅ Razorpay test-mode OK — order id:',o.id)).catch(e=>console.error('❌ Razorpay error:',e.message))\""
+  },
+  "keywords": [
+    "pizza",
+    "delivery",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^10.2.1",
+    "razorpay": "^2.9.8",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.4.3",
+    "nodemon": "^3.1.14"
+  }
+}

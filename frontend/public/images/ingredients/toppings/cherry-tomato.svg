@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#fdf8f3"/>
+  <circle cx="170" cy="180" r="28" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <circle cx="200" cy="200" r="28" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <circle cx="230" cy="180" r="28" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <path d="M 170 152 Q 165 160 170 168" fill="none" stroke="#2d6a4f" stroke-width="2"/>
+  <path d="M 200 172 Q 195 180 200 188" fill="none" stroke="#2d6a4f" stroke-width="2"/>
+  <path d="M 230 152 Q 235 160 230 168" fill="none" stroke="#2d6a4f" stroke-width="2"/>
+  <text x="200" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b6b6b" text-anchor="middle" font-weight="bold">Cherry Tomato</text>
+</svg>
